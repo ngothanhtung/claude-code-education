@@ -10,7 +10,8 @@ Educational physics simulation games about "Chuyển Động Ngược Chiều" (
 
 | File | Description | Tech Stack |
 | --- | --- | --- |
-| `two-cars-simple-p5js.html` | Main simulation | p5.js 1.9.0 + plain CSS (no other JS libs) |
+| `hai-xe-chuyen-dong-nguoc-chieu.html` | Two vehicles moving toward each other (tổng vận tốc) | p5.js 1.9.0 + plain CSS |
+| `hai-xe-chuyen-dong-cung-chieu.html` | Motorbike leaves first, car chases from the same point (hiệu vận tốc) | p5.js 1.9.0 + plain CSS |
 
 ## Running
 
@@ -24,7 +25,7 @@ python3 -m http.server 8000
 npx serve .
 ```
 
-Then visit `http://localhost:8000/two-cars-simple-p5js.html`
+Then visit `http://localhost:8000/hai-xe-chuyen-dong-nguoc-chieu.html`
 
 ## Key Libraries (CDN)
 
@@ -32,6 +33,8 @@ Then visit `http://localhost:8000/two-cars-simple-p5js.html`
 - **Google Fonts** — Be Vietnam Pro (UI), Patrick Hand (handwritten "Bài giải" notebook)
 
 ## Design
+
+- Both lessons share the same design system (copy-paste, no shared CSS file) and link to each other via the `.lessons` nav in the masthead. When changing tokens or shared components, update both files.
 
 - Theme: Vietnamese school notebook (vở ô li) + purple ink (mực tím). Tokens are CSS variables in `:root`; the canvas mirrors them in the `COL` object — keep both in sync.
 - Car colors have separate "draw" and "text" variants (`--car-a` / `--car-a-text`) so text meets contrast on white.
@@ -45,3 +48,4 @@ Then visit `http://localhost:8000/two-cars-simple-p5js.html`
 - Any slider change resets the simulation and hides the solution. The solution reveals automatically when the cars meet (or via "Hiện đáp án").
 - For non-terminating times, the solution rounds t to 2 decimals and reuses that rounded value in later steps (as students would), marking approximations with ≈.
 - Keyboard: Space = run/pause, R = reset. `prefers-reduced-motion` disables the highlighter and tag fade animations.
+- Cùng chiều specifics: `t` is measured from when the motorbike starts; the car waits at A for `t0` hours (B marks the head-start point). The km scale (`st.L`) is recomputed per problem with `niceStep` so the meet point fits; playback duration is fixed (`st.dur` seconds) rather than a fixed hours/second rate. If car speed ≤ motorbike speed, Run is disabled and a notice explains why.
