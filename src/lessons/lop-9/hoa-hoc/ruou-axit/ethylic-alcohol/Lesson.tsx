@@ -3,6 +3,7 @@
 import type p5 from 'p5';
 import { StoichSolution, computeStoich, type Given, type Target } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
+import Molecule3D from '@/components/Molecule3D';
 import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
@@ -148,6 +149,7 @@ export default function EthylicAlcoholLesson() {
       slug="ethylic-alcohol"
       sim={sim}
       exercises={ex}
+      media={<Molecule3D files={['ethanol']} groups={[{ label: 'đồng phân C₂H₆O', files: ['ethanol', 'dimethyl-ether'] }]} />}
       problem={problem}
       draw={draw}
       canvasLabel={

@@ -26,17 +26,19 @@ export interface Params {
 
 /** Dung dịch: nguyên tố bị đẩy ra, hóa trị, gốc acid, tên và màu */
 const SOLUTIONS: Record<SolId, { cation: string; q: number; anion: string; name: string; col: string }> = {
-  HCl: { cation: 'H', q: 1, anion: 'Cl', name: 'dung dịch HCl', col: '#E3EEF8' },
-  H2SO4: { cation: 'H', q: 1, anion: 'SO4', name: 'dung dịch H₂SO₄ loãng', col: '#E3EEF8' },
+  HCl: { cation: 'H', q: 1, anion: 'Cl', name: 'dung dịch HCl', col: '#CFE1F3' },
+  H2SO4: { cation: 'H', q: 1, anion: 'SO4', name: 'dung dịch H₂SO₄ loãng', col: '#CFE1F3' },
   CuSO4: { cation: 'Cu', q: 2, anion: 'SO4', name: 'dung dịch CuSO₄ (màu xanh lam)', col: '#7FB5E6' },
-  AgNO3: { cation: 'Ag', q: 1, anion: 'NO3', name: 'dung dịch AgNO₃', col: '#EEF1F5' },
+  AgNO3: { cation: 'Ag', q: 1, anion: 'NO3', name: 'dung dịch AgNO₃', col: '#DCE4EE' },
   FeSO4: { cation: 'Fe', q: 2, anion: 'SO4', name: 'dung dịch FeSO₄ (lục nhạt)', col: '#CFE7C9' },
 };
 
 const METAL_OPTIONS = (['Mg', 'Al', 'Zn', 'Fe', 'Cu', 'Ag'] as const).map((x) => ({ value: x, label: x }));
 const SOL_OPTIONS = (Object.keys(SOLUTIONS) as SolId[]).map((k) => ({ value: k, label: cu(k) }));
 
-const METAL_COL: Record<string, string> = { Mg: '#D9DDE5', Al: '#C9CED8', Zn: '#B8C0CC', Fe: '#7A808C', Cu: '#C8733A', Ag: '#E3E6EC' };
+const METAL_COL: Record<string, string> = { Mg: '#C9CFDA', Al: '#BFC6D2', Zn: '#AEB7C4', Fe: '#7A808C', Cu: '#B5562B', Ag: '#C9CED6' };
+/** Mức hoạt động (tốc độ phản ứng, lượng bọt khí) theo dãy hoạt động */
+const SPEED: Record<string, number> = { Mg: 1, Al: 0.7, Zn: 0.6, Fe: 0.4, Cu: 0.35, Ag: 0.3 };
 /** màu dung dịch muối theo kim loại của muối */
 const SALT_COL: Record<string, string> = { Cu: '#7FB5E6', Fe: '#CFE7C9' };
 
@@ -75,6 +77,7 @@ export default function DayHoatDongLesson() {
       reacts,
       isAcid,
       metalCol: METAL_COL[q.metal],
+      speed: SPEED[q.metal],
       coatCol: METAL_COL[sol.cation] ?? '#B5562B',
       solCol: sol.col,
       solAfter: SALT_COL[q.metal] ?? '#EEF2F7',
@@ -135,7 +138,7 @@ export default function DayHoatDongLesson() {
       draw={draw}
       canvasLabel="Dãy hoạt động hóa học ở trên; thanh kim loại nhúng vào cốc dung dịch, kim loại mới bám vào thanh hoặc có bọt khí nếu có phản ứng."
       readout={[
-        { label: 'Vị trí trong dãy', value: `${q.metal} ${relation} ${before}`, tone: 'time' },
+        { label: 'Vị trí trong dãy', value: `${q.metal} ${reacts ? 'trước' : 'sau'} ${before}`, tone: 'time' },
         { label: 'Phản ứng', value: show ? (reacts ? 'có' : 'không') : '?', tone: 'a' },
         {
           label: isAcid ? 'Thể tích H₂' : `Khối lượng ${sol.cation}`,

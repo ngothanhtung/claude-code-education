@@ -121,6 +121,13 @@ export const MOLECULES: Record<string, Molecule> = {
   },
 };
 
+/** Làm sáng (k > 0) hoặc tối (k < 0) một màu hex */
+function shade(hex: string, k: number): string {
+  const v = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const out = v.map((c) => Math.round(k >= 0 ? c + (255 - c) * k : c * (1 + k)));
+  return `rgb(${out.join(',')})`;
+}
+
 function bounds(m: Molecule) {
   const xs = m.atoms.map((a) => a[1]);
   const ys = m.atoms.map((a) => a[2]);
@@ -188,13 +195,23 @@ export function drawMolecule(p: p5, f: string, cx: number, cy: number, s: number
     const [el] = m.atoms[i];
     const [x, y] = P(i);
     const r = (ATOM_R[el] ?? 0.4) * s;
-    p.stroke(el === 'H' ? '#8D96A8' : 'rgba(0,0,0,0.25)');
-    p.strokeWeight(1.5);
-    p.fill(ATOM_COL[el] ?? '#999');
-    p.circle(x, y, r * 2);
+    // quả cầu tô chuyển sắc (sáng ở góc trên trái, tối dần) để có khối mà không đè lên chữ
+    const base = ATOM_COL[el] ?? '#999999';
+    const ctx = p.drawingContext as CanvasRenderingContext2D;
+    const g = ctx.createRadialGradient(x - r * 0.4, y - r * 0.45, r * 0.1, x, y, r);
+    g.addColorStop(0, shade(base, 0.35));
+    g.addColorStop(0.55, base);
+    g.addColorStop(1, shade(base, -0.25));
+    ctx.save();
+    ctx.fillStyle = g;
+    ctx.strokeStyle = el === 'H' ? '#8D96A8' : 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
     p.noStroke();
-    p.fill(255, 255, 255, 90);
-    p.circle(x - r * 0.3, y - r * 0.3, r * 0.6);
     if (labels && r > 7) {
       p.fill(el === 'H' || el === 'S' ? COL.text : '#FFFFFF');
       p.textAlign(p.CENTER, p.CENTER);

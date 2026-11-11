@@ -31,6 +31,8 @@ interface LessonLayoutProps {
   activeRule?: string;
   /** nhãn nút phát (mặc định: "Cho xe chạy"…) */
   playLabels?: PlayLabels;
+  /** khối minh họa thêm dưới ô số liệu (vd. mô hình phân tử 3D) */
+  media?: ReactNode;
   /** bộ bài tập soạn sẵn (Bài tập 1…5) */
   exercises?: Pick<Exercises<unknown>, 'current' | 'count' | 'pick'>;
 }
@@ -76,6 +78,7 @@ export default function LessonLayout(props: LessonLayoutProps) {
           <SimCanvas draw={props.draw} label={props.canvasLabel} />
 
           <Readout items={props.readout} />
+          {props.media}
         </section>
 
         {/* Bảng điều chỉnh: nút thao tác + tham số, đặt cạnh mô phỏng */}

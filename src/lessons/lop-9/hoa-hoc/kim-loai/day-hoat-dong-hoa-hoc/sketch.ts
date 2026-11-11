@@ -2,7 +2,8 @@ import type p5 from 'p5';
 import { ACTIVITY } from '@/lib/chem';
 import { COL } from '@/lib/draw/colors';
 import { caption, clamp01 } from '@/lib/draw/geometry';
-import { beaker, bubbles, mix } from '@/lib/draw/lab';
+import { deposit, fizz, glassBeaker, liquid, metalStrip, pits, surfaceY, type Beaker } from '@/lib/draw/fx';
+import { mix } from '@/lib/draw/lab';
 import { drawPaper, labelBox } from '@/lib/draw/scene';
 
 export interface SeriesScene {
@@ -12,6 +13,8 @@ export interface SeriesScene {
   reacts: boolean;
   isAcid: boolean;
   metalCol: string;
+  /** mức hoạt động 0..1: tốc độ phản ứng và lượng bọt khí (Mg mạnh, Fe yếu) */
+  speed: number;
   /** màu lớp kim loại bám vào thanh, màu dung dịch trước và sau */
   coatCol: string;
   solCol: string;
@@ -27,38 +30,32 @@ export function drawSeries(p: p5, s: SeriesScene) {
   drawPaper(p);
   drawActivityRow(p, s);
 
-  const r = s.reacts ? clamp01(s.t - 1) : 0;
-  const bx = 300;
-  const yb = 420;
-  const sol = mix(s.solCol, s.solAfter, r);
-  beaker(p, bx, yb, 200, 190, 0.72, sol);
-  labelBox(p, bx, yb + 22, s.solLabel, COL.muted, 13);
+  // tiến độ phản ứng: kim loại càng hoạt động thì phản ứng càng nhanh lúc đầu
+  const u = clamp01(s.t - 1);
+  const r = s.reacts ? 1 - Math.pow(1 - u, 1 + 2 * s.speed) : 0;
+  const b: Beaker = { x: 300, yBottom: 420, w: 200, h: 190 };
+  const level = 0.72;
+  const surface = surfaceY(b, level);
+  liquid(p, b, level, mix(s.solCol, s.solAfter, r));
 
-  // thanh kim loại nhúng xuống
+  // thanh kim loại nhúng xuống; bị acid ăn mòn thì mỏng dần
   const dip = clamp01(s.t);
   const top = 150 + dip * 70;
-  const h = 210;
-  p.noStroke();
-  p.fill(s.metalCol);
-  p.rect(bx - 14, top, 28, h, 3);
-  p.fill(255, 255, 255, 80);
-  p.rect(bx - 10, top + 4, 5, h - 8, 2);
-  // phần ngập trong dung dịch bị phủ kim loại mới
-  const liquidTop = yb - 190 * 0.72;
-  if (r > 0 && !s.isAcid) {
-    const y0 = Math.max(top, liquidTop);
-    p.fill(s.coatCol);
-    const spots = 40;
-    for (let i = 0; i < spots * r; i++) {
-      const sx = bx - 14 + ((i * 37) % 28);
-      const sy = y0 + ((i * 53) % Math.max(1, top + h - y0));
-      p.ellipse(sx, sy, 7 + (i % 3) * 2, 6);
-    }
-    p.fill(s.coatCol + 'AA');
-    p.rect(bx - 15, y0, 30, (top + h - y0) * r, 2);
+  const h = 196;
+  const wStrip = s.isAcid ? 28 * (1 - 0.3 * r) : 28;
+  metalStrip(p, b.x, top, wStrip, h, s.metalCol);
+  const wet0 = Math.max(top, surface);
+  if (s.reacts && s.isAcid) {
+    pits(p, b.x, wStrip, wet0, top + h, r, 3);
+    // bọt H2 mạnh lúc đầu, yếu dần khi kim loại tan bớt
+    const rate = s.started ? s.speed * (1 - 0.75 * r) : 0;
+    if (s.t >= 1) fizz(p, { x0: b.x - wStrip / 2 - 3, x1: b.x + wStrip / 2 + 3, y0: wet0 + 6, y1: top + h - 2 }, surface, rate, 1);
+  } else if (s.reacts) {
+    deposit(p, b.x, wStrip, wet0 + 4, top + h, r, s.coatCol, b.yBottom - 6, 2);
   }
-  if (s.isAcid && s.reacts && s.t >= 1 && !s.done) bubbles(p, bx, top + h, liquidTop + 6, 40, 0.8);
-  labelBox(p, bx, top - 16, `thanh ${s.metal}`, COL.text, 13);
+  glassBeaker(p, b);
+  labelBox(p, b.x, b.yBottom + 22, s.solLabel, COL.muted, 13);
+  labelBox(p, b.x, top - 16, `thanh ${s.metal}`, COL.text, 13);
 
   // phương trình hoặc kết luận
   labelBox(p, 600, 300, s.reacts ? 'Có phản ứng' : 'Không phản ứng', s.reacts ? COL.aText : COL.muted, 18);

@@ -3,6 +3,7 @@
 import type p5 from 'p5';
 import { StoichSolution, computeStoich, type Given, type Target } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
+import Molecule3D from '@/components/Molecule3D';
 import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -132,6 +133,14 @@ export default function GlucoseSaccharoseLesson() {
       slug="glucose-saccharose"
       sim={sim}
       exercises={ex}
+      media={<Molecule3D
+          files={['glucose', 'fructose', 'sucrose']}
+          value={q.mode === 'thuyphan' ? 'sucrose' : 'glucose'}
+          groups={[
+            { label: 'glucose – fructose (cùng C₆H₁₂O₆)', files: ['glucose', 'fructose'] },
+            { label: 'saccharose = glucose + fructose', files: ['glucose', 'fructose', 'sucrose'] },
+          ]}
+        />}
       problem={problem}
       draw={draw}
       canvasLabel="Phương trình hóa học bằng mô hình; các thanh dưới là số mol từng chất."

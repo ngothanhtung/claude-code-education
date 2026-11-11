@@ -2,6 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
+import Molecule3D from '@/components/Molecule3D';
 import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
@@ -13,6 +14,7 @@ import {
 } from '@/lib/chem';
 import { fmt } from '@/lib/format';
 import { u } from '@/lib/tex';
+import type { Mol3DId } from '@/lib/molecules3d';
 import { EXERCISES } from './exercises';
 import { drawReactionScene } from '@/lib/draw/reaction';
 
@@ -42,6 +44,9 @@ const GIVEN_OPTIONS = [
 ] as const;
 
 const LABELS: PlayLabels = { start: 'Cho phản ứng', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
+
+/** Phân tử 3D ứng với chất đang chọn */
+const MOL3D_OF: Record<AlkaneId, Mol3DId> = { CH4: 'methane', C2H6: 'ethane', C3H8: 'propane', C4H10: 'butane' };
 
 export default function AlkaneLesson() {
   const ex = useExercises(EXERCISES);
@@ -129,6 +134,7 @@ export default function AlkaneLesson() {
       slug="alkane"
       sim={sim}
       exercises={ex}
+      media={<Molecule3D files={['methane', 'ethane', 'propane', 'butane']} value={MOL3D_OF[q.mol]} groups={[{ label: 'mạch carbon dài dần', files: ['methane', 'ethane', 'propane', 'butane'] }]} />}
       problem={problem}
       draw={draw}
       canvasLabel="Phương trình hóa học bằng mô hình phân tử: chất tham gia mờ dần, sản phẩm hiện dần; các thanh dưới là số mol từng chất."

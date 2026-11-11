@@ -2,6 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
+import Molecule3D from '@/components/Molecule3D';
 import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
@@ -14,6 +15,7 @@ import {
 import { fmt, isExact } from '@/lib/format';
 import { B, N, T, U, eq, u } from '@/lib/tex';
 import { drawReactionScene } from '@/lib/draw/reaction';
+import type { Mol3DId } from '@/lib/molecules3d';
 import { EXERCISES } from './exercises';
 import { drawBromine, drawPolymer } from './sketch';
 
@@ -47,6 +49,9 @@ const LABELS: PlayLabels = { start: 'Cho phản ứng', pause: 'Tạm dừng', r
 function fix(q: Params): Params {
   return (q.mode === 'honhop' || q.mode === 'trunghop') && q.mol !== 'C2H4' ? { ...q, mol: 'C2H4' } : q;
 }
+
+/** Phân tử 3D ứng với chất đang chọn */
+const MOL3D_OF: Record<AlkeneId, Mol3DId> = { C2H4: 'ethylene', C3H6: 'propylene' };
 
 export default function AlkeneLesson() {
   const ex = useExercises(EXERCISES, fix);
@@ -217,6 +222,7 @@ export default function AlkeneLesson() {
       slug="alkene"
       sim={sim}
       exercises={ex}
+      media={<Molecule3D files={['ethylene', 'propylene']} value={MOL3D_OF[q.mol]} groups={[{ label: 'liên kết đơn – đôi – ba', files: ['ethane', 'ethylene', 'acetylene'] }]} />}
       problem={problem}
       draw={draw}
       canvasLabel={

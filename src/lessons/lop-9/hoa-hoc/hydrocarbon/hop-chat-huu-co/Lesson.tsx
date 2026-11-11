@@ -2,6 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
+import Molecule3D from '@/components/Molecule3D';
 import { Num, Segmented, type PlayLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
@@ -9,6 +10,7 @@ import { useSimulation } from '@/hooks/useSimulation';
 import { ATOMIC, ce, cu, molarMass, parseFormula } from '@/lib/chem';
 import { fmt, isExact } from '@/lib/format';
 import { B, N, T, eq, u } from '@/lib/tex';
+import type { Mol3DId } from '@/lib/molecules3d';
 import { EXERCISES } from './exercises';
 import { drawOrganic } from '@/lib/draw/organic';
 
@@ -43,6 +45,9 @@ const LABELS: PlayLabels = { start: 'Lắp phân tử', pause: 'Tạm dừng', r
 const LABELS_CT: PlayLabels = { start: 'Tìm công thức', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
 
 const EL_NAME: Record<string, string> = { C: 'carbon', H: 'hydrogen', O: 'oxygen' };
+
+/** Phân tử 3D ứng với chất đang chọn */
+const MOL3D_OF: Record<MolId, Mol3DId> = { CH4: 'methane', C2H6: 'ethane', C3H8: 'propane', C2H4: 'ethylene', C2H2: 'acetylene', C2H6O: 'ethanol', C2H4O2: 'acetic-acid' };
 
 export default function HopChatHuuCoLesson() {
   const ex = useExercises(EXERCISES);
@@ -141,6 +146,16 @@ export default function HopChatHuuCoLesson() {
       slug="hop-chat-huu-co"
       sim={sim}
       exercises={ex}
+      media={!ctpt || show ? (
+        <Molecule3D
+          files={['methane', 'ethane', 'ethylene', 'acetylene', 'ethanol', 'acetic-acid']}
+          value={MOL3D_OF[q.mol]}
+          groups={[
+            { label: 'đồng phân C₂H₆O', files: ['ethanol', 'dimethyl-ether'] },
+            { label: 'liên kết đơn – đôi – ba', files: ['ethane', 'ethylene', 'acetylene'] },
+          ]}
+        />
+      ) : null}
       problem={problem}
       draw={draw}
       canvasLabel="Mô hình phân tử dạng quả cầu – thanh nối được lắp từng nguyên tử; cột bên phải là phần trăm khối lượng mỗi nguyên tố."

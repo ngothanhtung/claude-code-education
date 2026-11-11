@@ -3,6 +3,7 @@
 import type p5 from 'p5';
 import { MassSolution, StoichSolution, computeMass, computeStoich, type Given, type MassSpecies, type Target } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
+import Molecule3D from '@/components/Molecule3D';
 import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -174,6 +175,11 @@ export default function TinhBotCelluloseLesson() {
       slug="tinh-bot-cellulose"
       sim={sim}
       exercises={ex}
+      media={<Molecule3D
+          files={['maltose', 'cellobiose', 'glucose']}
+          value={q.raw === 'munca' ? 'cellobiose' : 'maltose'}
+          groups={[{ label: 'tinh bột (nối α) – cellulose (nối β)', files: ['maltose', 'cellobiose'] }]}
+        />}
       problem={problem}
       draw={draw}
       canvasLabel={flowMode ? 'Sơ đồ quy trình từ nguyên liệu đến sản phẩm, mỗi khối ghi khối lượng.' : 'Phương trình quang hợp tạo tinh bột; các thanh là số mol từng chất.'}

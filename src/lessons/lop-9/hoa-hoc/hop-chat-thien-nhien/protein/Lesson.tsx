@@ -3,6 +3,7 @@
 import type p5 from 'p5';
 import { StoichSolution, computeStoich, type Given, type Target } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
+import Molecule3D from '@/components/Molecule3D';
 import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
@@ -212,6 +213,11 @@ export default function ProteinLesson() {
       slug="protein"
       sim={sim}
       exercises={ex}
+      media={<Molecule3D
+          files={['glycine', 'alanine', 'glycylglycine']}
+          value={q.mode === 'thuyphan' ? 'glycylglycine' : q.amino === 'ala' ? 'alanine' : 'glycine'}
+          groups={[{ label: 'glycine → Gly-Gly (liên kết peptide)', files: ['glycine', 'glycylglycine'] }]}
+        />}
       problem={problem}
       draw={draw}
       canvasLabel="Mô hình amino acid, phương trình thủy phân peptide hoặc sơ đồ nhu cầu protein tùy dạng đề."

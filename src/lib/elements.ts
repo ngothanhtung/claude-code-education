@@ -7,6 +7,10 @@
 
 export type Category = 'kimloai' | 'phikim' | 'khihiem';
 
+/** Họ nguyên tố (tô màu bảng tuần hoàn theo cách phân loại quốc tế) */
+export type Family =
+  | 'kiem' | 'kiemtho' | 'chuyentiep' | 'sauchuyentiep' | 'akim' | 'phikim' | 'halogen' | 'khihiem' | 'lanthan' | 'actini' | 'chuaro';
+
 export interface ElementInfo {
   z: number;
   symbol: string;
@@ -17,7 +21,10 @@ export interface ElementInfo {
   /** nhóm 1…18; nguyên tố họ lanthan/actini có group = 3 và fRow = true */
   group: number;
   fRow: boolean;
+  /** phân loại theo SGK: kim loại / phi kim / khí hiếm */
   category: Category;
+  /** họ nguyên tố, dùng tô màu */
+  family: Family;
 }
 
 // Z|ký hiệu|tên|khối lượng (ngoặc: không có đồng vị bền)
@@ -50,6 +57,28 @@ const NONMETALS = new Set(['H', 'B', 'C', 'N', 'O', 'F', 'Si', 'P', 'S', 'Cl', '
 const NOBLE = new Set(['He', 'Ne', 'Ar', 'Kr', 'Xe', 'Rn', 'Og']);
 const PERIOD_END = [2, 10, 18, 36, 54, 86, 118];
 
+const ALKALI = new Set(['Li', 'Na', 'K', 'Rb', 'Cs', 'Fr']);
+const ALKALINE = new Set(['Be', 'Mg', 'Ca', 'Sr', 'Ba', 'Ra']);
+const POST_TRANSITION = new Set(['Al', 'Ga', 'In', 'Sn', 'Tl', 'Pb', 'Bi', 'Po']);
+const METALLOIDS = new Set(['B', 'Si', 'Ge', 'As', 'Sb', 'Te']);
+const HALOGENS = new Set(['F', 'Cl', 'Br', 'I', 'At']);
+const NOBLE_GASES = new Set(['He', 'Ne', 'Ar', 'Kr', 'Xe', 'Rn']);
+const OTHER_NONMETALS = new Set(['H', 'C', 'N', 'O', 'P', 'S', 'Se']);
+
+/** Họ nguyên tố; Z ≥ 109 (trừ Cn) chưa đủ dữ liệu thực nghiệm */
+function familyOf(z: number, symbol: string, fRow: boolean, period: number): Family {
+  if (z >= 109 && z !== 112) return 'chuaro';
+  if (fRow) return period === 6 ? 'lanthan' : 'actini';
+  if (ALKALI.has(symbol)) return 'kiem';
+  if (ALKALINE.has(symbol)) return 'kiemtho';
+  if (POST_TRANSITION.has(symbol)) return 'sauchuyentiep';
+  if (METALLOIDS.has(symbol)) return 'akim';
+  if (HALOGENS.has(symbol)) return 'halogen';
+  if (NOBLE_GASES.has(symbol)) return 'khihiem';
+  if (OTHER_NONMETALS.has(symbol)) return 'phikim';
+  return 'chuyentiep';
+}
+
 /** Chu kì, nhóm và hàng họ f từ số hiệu nguyên tử */
 function place(z: number): { period: number; group: number; fRow: boolean } {
   const period = PERIOD_END.findIndex((e) => z <= e) + 1;
@@ -67,14 +96,16 @@ export const ELEMENTS: ElementInfo[] = RAW.trim().split(/\s+/).map((tok) => {
   const [z, symbol, name, m] = tok.split('|');
   const radio = m.startsWith('(');
   const n = Number(z);
+  const pos = place(n);
   return {
     z: n,
     symbol,
     name,
     mass: Number(m.replace(/[()]/g, '')),
     radio,
-    ...place(n),
+    ...pos,
     category: NOBLE.has(symbol) ? 'khihiem' : NONMETALS.has(symbol) ? 'phikim' : 'kimloai',
+    family: familyOf(n, symbol, pos.fRow, pos.period),
   };
 });
 
@@ -89,6 +120,21 @@ export function calcMass(symbol: string): number | undefined {
 }
 
 export const CATEGORY_NAME: Record<Category, string> = { kimloai: 'Kim loại', phikim: 'Phi kim', khihiem: 'Khí hiếm' };
+
+/** Tên họ, theo thứ tự hiện trong chú giải */
+export const FAMILY_NAME: Record<Family, string> = {
+  kiem: 'Kim loại kiềm',
+  kiemtho: 'Kim loại kiềm thổ',
+  chuyentiep: 'Kim loại chuyển tiếp',
+  sauchuyentiep: 'Kim loại sau chuyển tiếp',
+  lanthan: 'Họ lanthan',
+  actini: 'Họ actini',
+  akim: 'Á kim',
+  phikim: 'Phi kim',
+  halogen: 'Halogen',
+  khihiem: 'Khí hiếm',
+  chuaro: 'Chưa rõ tính chất',
+};
 
 /** Tên nhóm kiểu SGK Việt Nam: IA, IIA, IIIB… VIIIA */
 const GROUP_NAME = ['IA', 'IIA', 'IIIB', 'IVB', 'VB', 'VIB', 'VIIB', 'VIIIB', 'VIIIB', 'VIIIB', 'IB', 'IIB', 'IIIA', 'IVA', 'VA', 'VIA', 'VIIA', 'VIIIA'];
