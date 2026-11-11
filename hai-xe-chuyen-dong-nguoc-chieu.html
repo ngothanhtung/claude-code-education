@@ -191,6 +191,14 @@
       border-left: 1px solid var(--line);
     }
 
+    .readout dt,
+    .readout dd,
+    .readout small {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .readout dt {
       font-size: 14px;
       color: var(--muted);
@@ -206,6 +214,7 @@
 
     .readout small {
       display: block;
+      min-height: 1.5em;
       font-size: 14px;
       font-weight: 500;
       color: var(--muted);
@@ -610,6 +619,7 @@
     <div>
       <h1>Hai xe chuyển động ngược chiều</h1>
       <nav class="lessons" aria-label="Các bài mô phỏng">
+        <a href="index.html">Tất cả bài</a>
         <a href="hai-xe-chuyen-dong-nguoc-chieu.html" aria-current="page">Ngược chiều</a>
         <a href="hai-xe-chuyen-dong-cung-chieu.html">Cùng chiều</a>
       </nav>
@@ -1077,7 +1087,7 @@
     function updateReadout() {
       const sA = st.vA * st.t, sB = st.vB * st.t;
       $('rT').textContent = `${fmt(st.t)} giờ`;
-      $('rTm').textContent = st.met && !isExact(st.t * 60, 0) ? `khoảng ${hm(st.t)}` : hm(st.t);
+      $('rTm').textContent = st.met && !isExact(st.t * 60, 0) ? `≈ ${hm(st.t)}` : hm(st.t);
       $('rA').textContent = `${fmt(sA, 1)} km`;
       $('rB').textContent = `${fmt(sB, 1)} km`;
       $('rGap').textContent = `${fmt(Math.max(st.S - sA - sB, 0), 1)} km`;

@@ -10,6 +10,7 @@ Educational physics simulation games about "Chuyển Động Ngược Chiều" (
 
 | File | Description | Tech Stack |
 | --- | --- | --- |
+| `index.html` | Lesson picker (mục lục) linking to each simulation, with SVG diagram thumbnails | Plain HTML + CSS |
 | `hai-xe-chuyen-dong-nguoc-chieu.html` | Two vehicles moving toward each other (tổng vận tốc) | p5.js 1.9.0 + plain CSS |
 | `hai-xe-chuyen-dong-cung-chieu.html` | Motorbike leaves first, car chases from the same point (hiệu vận tốc) | p5.js 1.9.0 + plain CSS |
 
@@ -25,7 +26,7 @@ python3 -m http.server 8000
 npx serve .
 ```
 
-Then visit `http://localhost:8000/hai-xe-chuyen-dong-nguoc-chieu.html`
+Then visit `http://localhost:8000/` (opens `index.html`)
 
 ## Key Libraries (CDN)
 
@@ -34,7 +35,7 @@ Then visit `http://localhost:8000/hai-xe-chuyen-dong-nguoc-chieu.html`
 
 ## Design
 
-- Both lessons share the same design system (copy-paste, no shared CSS file) and link to each other via the `.lessons` nav in the masthead. When changing tokens or shared components, update both files.
+- Both lessons share the same design system (copy-paste, no shared CSS file) and link to each other (plus back to `index.html`) via the `.lessons` nav in the masthead. When adding a new lesson, add a row to `index.html` and a link to every lesson's nav. When changing tokens or shared components, update both files.
 
 - Theme: Vietnamese school notebook (vở ô li) + purple ink (mực tím). Tokens are CSS variables in `:root`; the canvas mirrors them in the `COL` object — keep both in sync.
 - Car colors have separate "draw" and "text" variants (`--car-a` / `--car-a-text`) so text meets contrast on white.

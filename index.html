@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toán chuyển động lớp 5 – Mô phỏng</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Patrick+Hand&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* Tokens dùng chung với các bài mô phỏng */
+    :root {
+      --page: #EDF1F8;
+      --paper: #FFFFFF;
+      --line: #D5DDEC;
+      --grid: #DFE6F4;
+      --ink: #3B2A8C;
+      --ink-tint: #ECE8FA;
+      --text: #1D2540;
+      --muted: #5A6482;
+      --car-a: #E0443F;
+      --car-a-text: #C2302B;
+      --car-b: #0C9A88;
+      --car-b-text: #08776A;
+      --margin: #EFA2A6;
+      --radius-lg: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      font-size: 17px;
+      line-height: 1.55;
+      color: var(--text);
+      background: var(--page);
+      padding: clamp(20px, 5vw, 56px) clamp(14px, 3vw, 40px) 40px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 4px;
+      border-radius: 8px;
+    }
+
+    .sheet {
+      max-width: 960px;
+      margin: 0 auto;
+      position: relative;
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(to right, transparent 63px, var(--margin) 63px, var(--margin) 65px, transparent 65px),
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 100% 100%, 32px 32px, 32px 32px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 18px 40px -24px rgba(59, 42, 140, 0.35);
+      padding: 40px clamp(20px, 4vw, 48px) 40px 96px;
+    }
+
+    header {
+      margin-bottom: 28px;
+    }
+
+    .subject {
+      font-family: 'Patrick Hand', 'Be Vietnam Pro', cursive;
+      font-size: 24px;
+      color: var(--ink);
+      line-height: 32px;
+    }
+
+    h1 {
+      font-size: clamp(30px, 4.4vw, 46px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin: 4px 0 12px;
+    }
+
+    header p {
+      color: var(--muted);
+      max-width: 56ch;
+    }
+
+    /* ---- Danh sách bài ---- */
+    .lessons {
+      list-style: none;
+      display: grid;
+      gap: 16px;
+    }
+
+    .lesson {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 8px 28px;
+      align-items: center;
+      padding: 20px;
+      background: var(--paper);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      color: inherit;
+      text-decoration: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .lesson:hover {
+      border-color: var(--ink);
+      box-shadow: 0 10px 24px -16px rgba(59, 42, 140, 0.5);
+    }
+
+    .thumb {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+      background: #F7F9FD;
+    }
+
+    .lesson-no {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .lesson h2 {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--ink);
+      margin: 2px 0 6px;
+    }
+
+    .lesson p {
+      font-size: 16px;
+      max-width: 60ch;
+    }
+
+    .rule {
+      margin-top: 10px;
+      display: inline-block;
+      font-size: 15px;
+      background: var(--ink-tint);
+      color: var(--ink);
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    .rule b {
+      font-weight: 700;
+    }
+
+    .open {
+      display: flex;
+      width: fit-content;
+      align-items: center;
+      gap: 6px;
+      margin-top: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .open svg {
+      width: 16px;
+      height: 16px;
+      transition: transform .15s;
+    }
+
+    .lesson:hover .open svg {
+      transform: translateX(3px);
+    }
+
+    footer {
+      margin-top: 28px;
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 64ch;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 14px 10px 28px;
+        font-size: 16px;
+      }
+
+      .sheet {
+        padding: 28px 16px 28px 52px;
+        background-image:
+          linear-gradient(to right, transparent 35px, var(--margin) 35px, var(--margin) 37px, transparent 37px),
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      }
+
+      .lesson {
+        grid-template-columns: 1fr;
+        padding: 16px;
+      }
+
+      .lesson h2 {
+        font-size: 21px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lesson,
+      .open svg {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="sheet">
+    <header>
+      <div class="subject">Toán lớp 5</div>
+      <h1>Bài toán chuyển động</h1>
+      <p>Chọn một dạng bài để mở mô phỏng. Mỗi bài có đề bài đổi được số liệu, hình xe chạy, sơ đồ đoạn thẳng
+        và bài giải mẫu theo cách trình bày trong vở.</p>
+    </header>
+
+    <ol class="lessons">
+      <li>
+        <a class="lesson" href="hai-xe-chuyen-dong-nguoc-chieu.html">
+          <!-- Sơ đồ: hai xe đi từ A và B, gặp nhau ở C -->
+          <svg class="thumb" viewBox="0 0 240 120" role="img" aria-label="Sơ đồ hai xe đi ngược chiều gặp nhau tại C">
+            <line x1="28" y1="78" x2="212" y2="78" stroke="#1D2540" stroke-width="2" />
+            <line x1="28" y1="70" x2="28" y2="86" stroke="#1D2540" stroke-width="2" />
+            <line x1="212" y1="70" x2="212" y2="86" stroke="#1D2540" stroke-width="2" />
+            <rect x="28" y="56" width="74" height="7" rx="3.5" fill="#E0443F" />
+            <rect x="102" y="56" width="110" height="7" rx="3.5" fill="#0C9A88" />
+            <path d="M40 38 h28 m-6 -5 l6 5 l-6 5" stroke="#C2302B" stroke-width="2.4" fill="none"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M200 38 h-28 m6 -5 l-6 5 l6 5" stroke="#08776A" stroke-width="2.4" fill="none"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <line x1="102" y1="26" x2="102" y2="78" stroke="#3B2A8C" stroke-width="1.6" stroke-dasharray="4 4" />
+            <circle cx="102" cy="78" r="4.5" fill="#3B2A8C" />
+            <g font-family="Be Vietnam Pro, sans-serif" font-size="13" font-weight="700" text-anchor="middle">
+              <text x="28" y="104" fill="#1D2540">A</text>
+              <text x="102" y="104" fill="#3B2A8C">C</text>
+              <text x="212" y="104" fill="#1D2540">B</text>
+            </g>
+          </svg>
+          <div>
+            <div class="lesson-no">Bài 1</div>
+            <h2>Hai xe chuyển động ngược chiều</h2>
+            <p>Hai ô tô cùng lúc đi từ hai đầu quãng đường và chạy về phía nhau. Sau bao lâu thì gặp nhau, mỗi xe
+              đi được bao nhiêu ki-lô-mét?</p>
+            <span class="rule"><b>Thời gian gặp nhau</b> = quãng đường : tổng vận tốc</span>
+            <div class="open">
+              Mở mô phỏng
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <li>
+        <a class="lesson" href="hai-xe-chuyen-dong-cung-chieu.html">
+          <!-- Sơ đồ: xe máy đi trước đến B, ô tô đuổi theo từ A, gặp nhau ở C -->
+          <svg class="thumb" viewBox="0 0 240 120" role="img"
+            aria-label="Sơ đồ hai xe đi cùng chiều, ô tô đuổi kịp xe máy tại C">
+            <line x1="28" y1="88" x2="212" y2="88" stroke="#1D2540" stroke-width="2" />
+            <line x1="28" y1="80" x2="28" y2="96" stroke="#1D2540" stroke-width="2" />
+            <line x1="82" y1="80" x2="82" y2="96" stroke="#08776A" stroke-width="2" />
+            <rect x="28" y="44" width="148" height="7" rx="3.5" fill="#0C9A88" />
+            <rect x="28" y="64" width="148" height="7" rx="3.5" fill="#E0443F" />
+            <path d="M184 47.5 h14 m-5 -4.5 l5 4.5 l-5 4.5" stroke="#08776A" stroke-width="2.2" fill="none"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M184 67.5 h14 m-5 -4.5 l5 4.5 l-5 4.5" stroke="#C2302B" stroke-width="2.2" fill="none"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <line x1="176" y1="38" x2="176" y2="88" stroke="#3B2A8C" stroke-width="1.6" stroke-dasharray="4 4" />
+            <circle cx="176" cy="88" r="4.5" fill="#3B2A8C" />
+            <g font-family="Be Vietnam Pro, sans-serif" font-size="13" font-weight="700" text-anchor="middle">
+              <text x="28" y="113" fill="#1D2540">A</text>
+              <text x="82" y="113" fill="#08776A">B</text>
+              <text x="176" y="113" fill="#3B2A8C">C</text>
+            </g>
+            <text x="28" y="30" font-family="Be Vietnam Pro, sans-serif" font-size="11" font-weight="600"
+              fill="#5A6482">xe máy đi trước, ô tô đuổi theo</text>
+          </svg>
+          <div>
+            <div class="lesson-no">Bài 2</div>
+            <h2>Hai xe chuyển động cùng chiều</h2>
+            <p>Xe máy đi trước một khoảng thời gian, sau đó ô tô xuất phát cùng chỗ và đuổi theo. Sau bao lâu ô tô
+              đuổi kịp, chỗ gặp cách điểm xuất phát bao xa?</p>
+            <span class="rule"><b>Thời gian đuổi kịp</b> = khoảng cách : hiệu vận tốc</span>
+            <div class="open">
+              Mở mô phỏng
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </div>
+          </div>
+        </a>
+      </li>
+    </ol>
+
+    <footer>
+      Gợi ý cho giáo viên: mở bài trên màn chiếu, cho học sinh tự tính trước, rồi bấm cho xe chạy để kiểm tra.
+      Phím <b>Space</b> để chạy hoặc tạm dừng, <b>R</b> để làm lại.
+    </footer>
+  </main>
+</body>
+
+</html>

@@ -208,6 +208,14 @@
       border-left: 1px solid var(--line);
     }
 
+    .readout dt,
+    .readout dd,
+    .readout small {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .readout dt {
       font-size: 14px;
       color: var(--muted);
@@ -223,6 +231,7 @@
 
     .readout small {
       display: block;
+      min-height: 1.5em;
       font-size: 14px;
       font-weight: 500;
       color: var(--muted);
@@ -633,6 +642,7 @@
     <div>
       <h1>Hai xe chuyển động cùng chiều</h1>
       <nav class="lessons" aria-label="Các bài mô phỏng">
+        <a href="index.html">Tất cả bài</a>
         <a href="hai-xe-chuyen-dong-nguoc-chieu.html">Ngược chiều</a>
         <a href="hai-xe-chuyen-dong-cung-chieu.html" aria-current="page">Cùng chiều</a>
       </nav>
@@ -663,7 +673,7 @@
       <dl class="readout">
         <div class="r-time">
           <dt>Ô tô đã đi</dt>
-          <dd><span id="rT">0 giờ</span><small id="rTm">xe máy đã đi 0 giờ</small></dd>
+          <dd><span id="rT">0 giờ</span><small id="rTm">xe máy: 0 phút</small></dd>
         </div>
         <div class="r-b">
           <dt>Xe máy cách A</dt>
@@ -768,10 +778,10 @@
     const W = 800, H = 500;
     const X0 = 100, X1 = 740;          // A ở X0; X1 là mốc cuối của thang km
     const ROAD_TOP = 160, ROAD_BOT = 272;
-    const LANE_MOTO = 200, LANE_CAR = 246;
+    const LANE_MOTO = 206, LANE_CAR = 249;
     const DIAG_TOP = 292;
     const LINE_Y = 420;
-    const CAR_HALF = 32, MOTO_HALF = 26;
+    const CAR_HALF = 32, MOTO_HALF = 28;
 
     const COL = {
       ink: '#3B2A8C', text: '#1D2540', muted: '#5A6482',
@@ -983,51 +993,147 @@
       pop();
     }
 
-    // --- XE MÁY (đi sang phải) ---
+    // --- XE MÁY kiểu xe số dáng Cub (đi sang phải) ---
+    // Khung thấp, ốp chắn gió chân phía trước, đèn pha tròn trên tay lái,
+    // bánh to vỏ mỏng có nan hoa, yên dài + baga sau. Đầu xe ở x = +28.
     function drawMoto(cx, cy, travelledPx) {
+      const BODY = COL.b;
+      const CREAM = '#F1E9D2';
+      const DARK = '#22283A';
+      const CHROME = '#C3CAD6';
+
       push();
       translate(cx, cy);
+      strokeCap(ROUND);
+      strokeJoin(ROUND);
 
+      // bóng
       noStroke();
       fill(0, 0, 0, 45);
-      ellipse(0, 19, 54, 6);
+      ellipse(0, 19, 60, 6);
 
-      const ang = travelledPx / 8;
-      drawWheel(-17, 11, ang);
-      drawWheel(17, 11, ang);
+      // bánh xe nan hoa
+      const ang = travelledPx / 9;
+      drawSpokeWheel(-18, 10, ang);
+      drawSpokeWheel(19, 10, ang);
 
-      // càng trước + ống xả
-      stroke('#22283A'); strokeWeight(3); strokeCap(ROUND);
-      line(13, -6, 17, 11);
-      stroke('#9AA3B5'); strokeWeight(3);
-      line(-20, 8, -6, 8);
+      // ống xả crôm
+      stroke(CHROME); strokeWeight(3.5);
+      line(-3, 9, -24, 9);
+      stroke('#9AA3B5'); strokeWeight(2);
+      line(-24, 9, -27, 8);
 
-      // thân xe
+      // máy
       noStroke();
-      fill(COL.b);
+      fill('#7D8699');
+      rect(-7, 0, 10, 8, 2);
+
+      // chắn bùn sau
+      noFill();
+      stroke(BODY); strokeWeight(3);
+      arc(-18, 10, 22, 22, PI * 1.05, PI * 1.95);
+
+      // khung xương thấp (chỗ trống để chân)
+      stroke(BODY); strokeWeight(4.5);
+      noFill();
+      bezier(15, -13, 11, -2, 7, 3, -2, 1);
+
+      // ốp thân sau (phần bầu dưới yên)
+      noStroke();
+      fill(BODY);
       beginShape();
-      vertex(-22, 2); vertex(-14, -5); vertex(8, -5); vertex(18, -9);
-      vertex(22, -3); vertex(14, 6); vertex(-14, 6);
+      vertex(-27, -7); vertex(-23, -12); vertex(-10, -13); vertex(-1, -11);
+      vertex(1, -5); vertex(-2, 2); vertex(-12, 3); vertex(-22, 1);
+      endShape(CLOSE);
+      // nẹp sáng dọc thân
+      stroke(255, 255, 255, 110); strokeWeight(1.2);
+      line(-24, -6, -4, -6);
+
+      // yên dài
+      noStroke();
+      fill(DARK);
+      rect(-26, -17, 23, 5, 3);
+
+      // baga sau + đèn hậu
+      stroke('#9AA3B5'); strokeWeight(2);
+      line(-30, -15, -24, -15);
+      noStroke();
+      fill('#C2302B');
+      rect(-30, -12, 3, 4, 1);
+
+      // người lái: chân (nằm sau ốp chắn gió)
+      stroke('#1D2540'); strokeWeight(5);
+      line(-14, -17, 4, -14);          // đùi
+      strokeWeight(4);
+      line(4, -14, 7, 1);              // cẳng chân
+      noStroke();
+      fill(DARK);
+      ellipse(9, 2, 7, 3.5);           // giày trên sàn để chân
+
+      // thân người
+      stroke('#1D2540'); strokeWeight(9);
+      line(-15, -19, -10, -32);
+
+      // ốp chắn gió chân (đặc trưng xe dáng Cub)
+      stroke('#D9CFB2'); strokeWeight(1);
+      fill(CREAM);
+      beginShape();
+      vertex(8, 5);
+      bezierVertex(6, -4, 8, -14, 12, -18);
+      bezierVertex(14, -20, 18, -19, 19, -15);
+      bezierVertex(20, -7, 19.5, 0, 18, 5);
       endShape(CLOSE);
 
-      // yên
-      fill('#22283A');
-      rect(-16, -9, 18, 5, 2);
+      // càng trước
+      stroke(DARK); strokeWeight(2.5);
+      line(17, -15, 19, 10);
 
-      // đèn pha
-      fill('#FFF3B0'); ellipse(22, -6, 5, 5);
+      // chắn bùn trước
+      noFill();
+      stroke(BODY); strokeWeight(3.5);
+      arc(19, 10, 22, 22, PI * 1.12, PI * 1.88);
 
-      // người lái
-      stroke('#1D2540'); strokeWeight(6); strokeCap(ROUND);
-      line(-6, -10, 0, -24);           // thân
-      strokeWeight(4);
-      line(-1, -20, 14, -12);          // tay
-      line(-4, -8, 6, 2);              // chân
+      // cụm tay lái + đèn pha tròn
       noStroke();
-      fill(COL.b);
-      circle(2, -31, 15);              // mũ bảo hiểm
-      fill(226, 240, 255);
-      rect(4, -33, 6, 5, 2);           // kính mũ
+      fill(BODY);
+      rect(12, -26, 11, 7, 3.5);
+      fill('#FFF3B0');
+      ellipse(23, -22.5, 4, 6);
+      stroke(DARK); strokeWeight(2.5);
+      line(11, -26, 15, -27);          // tay nắm
+
+      // tay người lái (đặt trên tay lái)
+      stroke('#1D2540'); strokeWeight(4);
+      line(-10, -29, 12, -25);
+
+      // mũ bảo hiểm
+      stroke('#CBD3E1'); strokeWeight(1);
+      fill('#FFFFFF');
+      circle(-7, -40, 15);
+      noStroke();
+      fill('#2B3550');
+      rect(-3, -42, 6, 5, 2);          // kính mũ
+      pop();
+    }
+
+    // Bánh xe máy: vỏ mỏng, vành crôm, nan hoa
+    function drawSpokeWheel(x, y, ang) {
+      push();
+      translate(x, y);
+      noFill();
+      stroke('#22283A'); strokeWeight(3);
+      circle(0, 0, 16);
+      stroke('#C9D0DD'); strokeWeight(1);
+      circle(0, 0, 12);
+      rotate(ang);
+      stroke('#AEB6C6'); strokeWeight(0.7);
+      for (let i = 0; i < 8; i++) {
+        const a = i * PI / 4;
+        line(0, 0, 6 * Math.cos(a), 6 * Math.sin(a));
+      }
+      noStroke();
+      fill('#9AA3B5');
+      circle(0, 0, 4);
       pop();
     }
 
@@ -1189,8 +1295,8 @@
     function updateReadout() {
       const carT = Math.max(st.t - st.t0, 0);
       const sMoto = st.v1 * st.t, sCar = st.v2 * carT;
-      $('rT').textContent = st.met && !isExact(carT * 60, 0) ? `khoảng ${hm(carT)}` : hm(carT);
-      $('rTm').textContent = `xe máy đã đi ${hm(st.t)}`;
+      $('rT').textContent = st.met && !isExact(carT * 60, 0) ? `≈ ${hm(carT)}` : hm(carT);
+      $('rTm').textContent = `xe máy: ${hm(st.t)}`;
       $('rB').textContent = `${fmt(sMoto, 1)} km`;
       $('rA').textContent = `${fmt(sCar, 1)} km`;
       $('rGap').textContent = `${fmt(Math.max(sMoto - sCar, 0), 1)} km`;
