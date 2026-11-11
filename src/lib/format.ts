@@ -44,3 +44,18 @@ export function niceLength(km: number): number {
   for (const m of [1, 2, 2.5, 5, 10]) if (m * mag >= x) return m * mag * 5;
   return 50 * mag;
 }
+
+/** Như fmt nhưng nhóm 3 chữ số khi phần nguyên từ 5 chữ số trở lên (10 000), như SGK */
+export function fmtG(n: number, d = 2): string {
+  const s = fmt(n, d);
+  const neg = s.startsWith('-');
+  const [i, f] = s.replace('-', '').split(',');
+  const g = i.length >= 5 ? i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : i;
+  return (neg ? '−' : '') + (f ? `${g},${f}` : g);
+}
+
+/** Góc (độ) làm tròn 1 chữ số: 32,1° */
+export const deg = (a: number, d = 1) => `${fmt(a, d)}°`;
+
+export const toRad = (a: number) => (a * Math.PI) / 180;
+export const toDeg = (r: number) => (r * 180) / Math.PI;

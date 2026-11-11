@@ -1,6 +1,10 @@
-import { Be_Vietnam_Pro, Patrick_Hand } from 'next/font/google';
+import { Be_Vietnam_Pro, Noto_Serif } from 'next/font/google';
 
-/** Font giao diện – thiết kế riêng cho dấu tiếng Việt */
+/**
+ * Hai phông dùng chung cho mọi cấp học (Lớp 5, Lớp 9…), đều có đủ dấu tiếng Việt:
+ *  - uiFont:   giao diện, đề bài, nút, nhãn trên hình vẽ
+ *  - bookFont: chữ trình bày kiểu SGK – vở "Bài giải", mục "Cần nhớ", chữ và đơn vị trong công thức
+ */
 export const uiFont = Be_Vietnam_Pro({
   subsets: ['vietnamese', 'latin'],
   weight: ['400', '500', '600', '700', '800'],
@@ -8,10 +12,10 @@ export const uiFont = Be_Vietnam_Pro({
   display: 'swap',
 });
 
-/** Font chữ viết tay cho vở "Bài giải" */
-export const handFont = Patrick_Hand({
+export const bookFont = Noto_Serif({
   subsets: ['vietnamese', 'latin'],
-  weight: '400',
-  variable: '--font-hand',
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-book',
   display: 'swap',
 });

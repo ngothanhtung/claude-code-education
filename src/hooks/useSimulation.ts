@@ -43,6 +43,9 @@ export function useSimulation({ total, enabled = true, defaultDuration = 8 }: Si
   const [duration, setDuration] = useState(defaultDuration);
   const tRef = useRef(0);
 
+  // Đổi dạng đề có thể đổi thời lượng mặc định: đưa tốc độ phát về "Vừa"
+  useEffect(() => setDuration(defaultDuration), [defaultDuration]);
+
   // Vòng lặp thời gian khi đang chạy
   useEffect(() => {
     if (!running) return;
@@ -99,7 +102,10 @@ export function useSimulation({ total, enabled = true, defaultDuration = 8 }: Si
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      const tag = (e.target as HTMLElement | null)?.tagName;
+      const target = e.target as HTMLElement | null;
+      // Cửa sổ tự xử lý phím (vd. máy tính) thì không kích hoạt phím tắt mô phỏng
+      if (target?.closest?.('[data-own-keys]')) return;
+      const tag = target?.tagName;
       if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') {
         e.preventDefault();
         keys.current.toggle();

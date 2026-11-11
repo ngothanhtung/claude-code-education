@@ -1,56 +1,55 @@
 import Link from 'next/link';
-import { LESSON_THUMBS } from '@/components/LessonThumbs';
-import { TOPICS, lessonsOf } from '@/lib/lessons';
+import { Arrow, TeacherTip } from '@/components/Catalog';
+import { GRADES, classHref, lessonCountOfSubject, subjectHref, subjectsOf, topicsOf } from '@/lib/lessons';
 
-/** Trang mục lục: chọn bài toán, chia theo chủ đề */
+/** Trang đầu: chọn lớp. Mỗi lớp dẫn tới /classes/<no>/subjects */
 export default function HomePage() {
   return (
     <main className="sheet">
       <header className="sheet-head">
-        <div className="sheet-subject">Toán lớp 5</div>
-        <h1>Mô phỏng bài toán</h1>
+        <div className="sheet-subject">Vở mô phỏng</div>
+        <h1>Chọn lớp</h1>
         <p>
-          Chọn một bài để mở mô phỏng. Mỗi bài có đề bài đổi được số liệu, hình minh họa chuyển động và bài giải mẫu
-          theo cách trình bày trong vở.
+          Mỗi bài có đề bài đổi được số liệu, hình minh họa chuyển động và bài giải mẫu theo cách trình bày trong vở.
         </p>
       </header>
 
-      {TOPICS.map((topic) => (
-        <section key={topic.id} className="topic" aria-labelledby={`topic-${topic.id}`}>
-          <h2 id={`topic-${topic.id}`} className="topic-title">
-            {topic.title}
-          </h2>
-          <ol className="lesson-list">
-            {lessonsOf(topic.id).map((l, i) => (
-              <li key={l.slug}>
-                <Link className="lesson-card" href={`/${l.slug}`}>
-                  {LESSON_THUMBS[l.slug]}
-                  <div>
-                    <div className="lesson-no">Bài {i + 1}</div>
-                    <h3>{l.title}</h3>
-                    <p>{l.summary}</p>
-                    <span className="lesson-rule">
-                      <b>{l.rule.term}</b> = {l.rule.text}
-                    </span>
-                    <div className="lesson-open">
-                      Mở mô phỏng
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"
-                        strokeLinejoin="round" aria-hidden="true">
-                        <path d="M5 12h14M13 6l6 6-6 6" />
-                      </svg>
-                    </div>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ol>
-        </section>
-      ))}
+      <ul className="grade-cards">
+        {GRADES.map((grade) => {
+          const subjects = subjectsOf(grade.id);
+          const total = subjects.reduce((n, s) => n + lessonCountOfSubject(s.id), 0);
+          return (
+            <li key={grade.id} id={grade.id} className="grade-card">
+              <div className="grade-card-head">
+                <span className="grade-level">{grade.level}</span>
+                <h2>
+                  <Link href={classHref(grade.id)}>{grade.title}</Link>
+                </h2>
+                <span className="grade-count">{total} bài</span>
+              </div>
 
-      <footer className="sheet-foot">
-        Gợi ý cho giáo viên: mở bài trên màn chiếu, cho học sinh tự tính trước, rồi bấm nút phát để kiểm tra. Phím{' '}
-        <b>Space</b> để chạy hoặc tạm dừng, <b>R</b> để làm lại.
-      </footer>
+              <ul className="grade-subjects" aria-label={`Các môn ${grade.title}`}>
+                {subjects.map((s) => (
+                  <li key={s.id}>
+                    <Link href={subjectHref(s.id)}>
+                      <b>{s.title}</b>
+                      <span>{topicsOf(s.id).map((t) => t.title).join(' · ')}</span>
+                      <em>{lessonCountOfSubject(s.id)} bài</em>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              <Link className="grade-open" href={classHref(grade.id)}>
+                Vào {grade.title.toLowerCase()}
+                <Arrow />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+
+      <TeacherTip />
     </main>
   );
 }

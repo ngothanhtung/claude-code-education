@@ -2,47 +2,61 @@
 
 import { Fragment, type ReactNode } from 'react';
 import type { Simulation } from '@/hooks/useSimulation';
-import { fmt, hm, isExact, round2 } from '@/lib/format';
+import { isExact, round2 } from '@/lib/format';
+import { H, N, T, eq } from '@/lib/tex';
+import { Rich, Tex } from './Tex';
 
 // ------------------------------------------------------------
-// Các dòng của bài giải trình bày như trong vở
+// Các dòng của bài giải trình bày như trong vở.
+// Chuỗi có thể chứa công thức LaTeX đặt giữa hai dấu $…$.
 // ------------------------------------------------------------
 
-/** Ô trống "?" khi chưa hiện đáp án */
-export const Blank = () => <span className="blank">?</span>;
-
-/** Hiện giá trị khi đã có đáp án, ngược lại là ô trống */
-export function Val({ show, children }: { show: boolean; children: ReactNode }) {
-  return show ? <>{children}</> : <Blank />;
-}
-
-/** Câu dẫn, ví dụ "Tổng vận tốc của hai ô tô là:" */
+/** Câu dẫn, ví dụ "Tổng vận tốc của hai ô tô là:" (có thể lẫn $công thức$) */
 export function Step({ children }: { children: ReactNode }) {
-  return <p>{children}</p>;
+  return <p>{typeof children === 'string' ? <Rich text={children} /> : children}</p>;
 }
 
-/** Dòng phép tính (thụt vào) */
-export function Calc({ children }: { children: ReactNode }) {
-  return <p className="calc">{children}</p>;
+/** Dòng phép tính (thụt vào), viết bằng LaTeX */
+export function Calc({ tex }: { tex: string }) {
+  return (
+    <p className="calc">
+      <Tex src={tex} />
+    </p>
+  );
+}
+
+/**
+ * Phần "Tóm tắt" của bài giải Vật lý: dữ kiện đã cho, đại lượng cần tìm, rồi "Giải".
+ * given: ["m = 2\\,\\text{kg}", "h = 5\\,\\text{m}"], find: ["W_t = ?"] (mỗi phần tử là LaTeX)
+ */
+export function Summary({ given, find }: { given: string[]; find: string[] }) {
+  return (
+    <>
+      <Step>
+        <span className="u">Tóm tắt</span>
+      </Step>
+      <Calc tex={given.join(';\\quad ')} />
+      <Calc tex={find.map((f) => `${f} = \\text{?}`).join(';\\quad ')} />
+      <Step>
+        <span className="u">Giải</span>
+      </Step>
+    </>
+  );
 }
 
 /** "Đổi: 2 giờ 30 phút = 2,5 giờ" khi số giờ không tròn */
 export function ConvLine({ hours }: { hours: number }) {
   if (Number.isInteger(hours)) return null;
-  return <Step>Đổi: {hm(hours)} = {fmt(hours)} giờ</Step>;
+  return <Step>{`Đổi: $${H(hours)} = ${N(hours)}${T(' giờ')}$`}</Step>;
 }
 
 /** "1,2 giờ = 1 giờ 12 phút" khi đã hiện đáp án và số giờ không tròn */
 export function MinutesLine({ hours, show }: { hours: number; show: boolean }) {
   if (!show || Number.isInteger(round2(hours))) return null;
-  return (
-    <Calc>
-      {fmt(hours)} giờ {isExact(hours * 60, 0) ? '=' : '≈'} {hm(hours)}
-    </Calc>
-  );
+  return <Calc tex={`${N(hours)}${T(' giờ')} ${eq(isExact(hours * 60, 0))} ${H(hours)}`} />;
 }
 
-/** Dòng "Đáp số:" – các ý được tô dạ quang lần lượt */
+/** Dòng "Đáp số:" – các ý được tô dạ quang lần lượt (mỗi ý có thể lẫn $công thức$) */
 export function Answer({ show, items }: { show: boolean; items: string[] }) {
   return (
     <p className="answer">
@@ -52,15 +66,18 @@ export function Answer({ show, items }: { show: boolean; items: string[] }) {
           {items.map((x, i) => (
             <Fragment key={i}>
               {i > 0 && '; '}
-              <mark className="hl" style={{ animationDelay: `${(0.05 + i * 0.3).toFixed(2)}s` }}>
-                {x}
+              <mark
+                className={x.replace(/\$[^$]*\$/g, 'xxxxxx').length > 18 ? 'hl hl-wrap' : 'hl'}
+                style={{ animationDelay: `${(0.05 + i * 0.3).toFixed(2)}s` }}
+              >
+                <Rich text={x} />
               </mark>
             </Fragment>
           ))}
           .
         </>
       ) : (
-        <Blank />
+        <span className="blank">?</span>
       )}
     </p>
   );
@@ -89,6 +106,7 @@ export interface RuleItem {
   /** khóa để tô nổi quy tắc đang dùng */
   key?: string;
   term: string;
+  /** quy tắc bằng lời ("quãng đường : thời gian") hoặc công thức bắt đầu bằng $ */
   text: string;
 }
 
@@ -98,7 +116,9 @@ export function Rules({ items, active }: { items: RuleItem[]; active?: string })
       <h2 id="can-nho">Cần nhớ</h2>
       {items.map((r) => (
         <p key={r.key ?? r.term} className={r.key && r.key === active ? 'active' : undefined}>
-          <b>{r.term}</b> = {r.text}
+          <b>{r.term}</b>
+          {r.text.startsWith('$') ? ': ' : ' = '}
+          <Rich text={r.text} />
         </p>
       ))}
     </section>

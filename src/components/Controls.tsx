@@ -169,6 +169,7 @@ export interface PlayLabels {
 }
 
 export const DRIVE_LABELS: PlayLabels = { start: 'Cho xe chạy', pause: 'Tạm dừng', resume: 'Chạy tiếp', again: 'Chạy lại' };
+export const LIGHT_LABELS: PlayLabels = { start: 'Chiếu tia sáng', pause: 'Tạm dừng', resume: 'Chiếu tiếp', again: 'Chiếu lại' };
 
 export function PlaybackControls({ sim, labels = DRIVE_LABELS }: { sim: Simulation; labels?: PlayLabels }) {
   let label = labels.start;
@@ -177,10 +178,10 @@ export function PlaybackControls({ sim, labels = DRIVE_LABELS }: { sim: Simulati
   else if (sim.started) label = labels.resume;
 
   const rates = [
-    { value: 14, label: 'Chậm' },
+    { value: Math.round(sim.defaultDuration * 1.75), label: 'Chậm' },
     { value: sim.defaultDuration, label: 'Vừa' },
-    { value: 4, label: 'Nhanh' },
-  ] as const;
+    { value: sim.defaultDuration / 2, label: 'Nhanh' },
+  ];
 
   return (
     <div className="actions">
