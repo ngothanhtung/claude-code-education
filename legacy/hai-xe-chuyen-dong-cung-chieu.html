@@ -536,6 +536,83 @@
       color: var(--text);
     }
 
+
+    /* --- Chọn dạng đề / đại lượng cần tìm --- */
+    .mode {
+      border: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .mode legend {
+      float: left;
+      font-size: 14px;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    .mode .seg {
+      display: flex;
+      flex-wrap: wrap;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .mode input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mode label {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .mode input:checked + label {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .mode input:focus-visible + label {
+      outline: 3px solid var(--ink);
+      outline-offset: 1px;
+    }
+
+    .field[hidden] {
+      display: none;
+    }
+
+    .fields.cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .rules p.active {
+      background: var(--ink-tint);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin: 0 -10px;
+    }
+
+    .rules p.active,
+    .rules p.active + p {
+      border-top-color: transparent;
+    }
+
+    @media (max-width: 720px) {
+      .fields.cols-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* ============================================================
        RESPONSIVE
        ============================================================ */
@@ -643,11 +720,13 @@
       <h1>Hai xe chuyển động cùng chiều</h1>
       <nav class="lessons" aria-label="Các bài mô phỏng">
         <a href="index.html">Tất cả bài</a>
+        <a href="van-toc-quang-duong-thoi-gian.html">Vận tốc</a>
+        <a href="gio-den-noi.html">Giờ đến nơi</a>
         <a href="hai-xe-chuyen-dong-nguoc-chieu.html">Ngược chiều</a>
         <a href="hai-xe-chuyen-dong-cung-chieu.html" aria-current="page">Cùng chiều</a>
       </nav>
     </div>
-    <p>Toán lớp 5. Đổi số liệu bằng thanh trượt, cho hai xe chạy rồi đối chiếu với bài giải bên cạnh.</p>
+    <p>Toán lớp 5. Đổi số liệu bằng thanh trượt, cho xe chạy rồi đối chiếu với bài giải bên cạnh.</p>
   </header>
 
   <main class="workspace">
@@ -655,57 +734,64 @@
     <section class="stage" aria-labelledby="de-bai">
       <div class="problem">
         <h2 id="de-bai">Đề bài</h2>
-        <p>
-          Một xe máy đi từ A với vận tốc <span class="num num-b" id="pV1">40 km/giờ</span>.
-          Sau <span class="num num-t" id="pT0">3 giờ</span>, một ô tô cũng đi từ A đuổi theo xe máy với vận tốc
-          <span class="num num-a" id="pV2">60 km/giờ</span>. Hỏi:
-        </p>
-        <ol>
-          <li>Ô tô đuổi kịp xe máy sau bao lâu?</li>
-          <li>Lúc hai xe gặp nhau, chỗ gặp cách A bao nhiêu ki-lô-mét?</li>
-        </ol>
+        <div id="problemText"></div>
         <p class="notice" id="notice" hidden></p>
       </div>
 
-      <div id="canvas-holder" role="img"
-        aria-label="Hình mô phỏng: xe máy đi từ A trước, ô tô chờ ở A rồi đuổi theo cùng chiều. Bên dưới là sơ đồ đoạn thẳng."></div>
+      <div id="canvas-holder" role="img" aria-label="Hình mô phỏng: xe máy đi trước, ô tô đuổi theo cùng chiều. Bên dưới là sơ đồ đoạn thẳng."></div>
 
       <dl class="readout">
         <div class="r-time">
           <dt>Ô tô đã đi</dt>
-          <dd><span id="rT">0 giờ</span><small id="rTm">xe máy: 0 phút</small></dd>
+          <dd><span id="rT">0 phút</span><small id="rTm">xe máy: 0 phút</small></dd>
         </div>
         <div class="r-b">
           <dt>Xe máy cách A</dt>
-          <dd id="rB">0 km</dd>
+          <dd><span id="rB">0 km</span></dd>
         </div>
         <div class="r-a">
           <dt>Ô tô cách A</dt>
-          <dd id="rA">0 km</dd>
+          <dd><span id="rA">0 km</span></dd>
         </div>
         <div class="r-gap">
           <dt>Hai xe cách nhau</dt>
-          <dd id="rGap">0 km</dd>
+          <dd><span id="rGap">0 km</span></dd>
         </div>
       </dl>
 
       <div class="controls">
-        <div class="fields">
-          <div class="field field-b">
+        <fieldset class="mode">
+          <legend>Dạng đề</legend>
+          <div class="seg">
+              <input type="radio" name="mode" id="mode0" value="late" checked>
+              <label for="mode0">Xe sau xuất phát muộn</label>
+              <input type="radio" name="mode" id="mode1" value="gap">
+              <label for="mode1">Cùng lúc, cách nhau</label>
+          </div>
+        </fieldset>
+        <div class="fields" id="fields">
+          <div class="field field-b" id="f-sV1">
             <div class="field-head">
               <label for="sV1">Vận tốc xe máy</label>
               <output id="oV1" for="sV1">40 km/giờ</output>
             </div>
             <input type="range" id="sV1" min="20" max="60" step="5" value="40">
           </div>
-          <div class="field field-t">
+          <div class="field field-t" id="f-sT0">
             <div class="field-head">
               <label for="sT0">Xe máy đi trước</label>
               <output id="oT0" for="sT0">3 giờ</output>
             </div>
             <input type="range" id="sT0" min="0.5" max="5" step="0.5" value="3">
           </div>
-          <div class="field field-a">
+          <div class="field field-t" id="f-sG">
+            <div class="field-head">
+              <label for="sG">Quãng đường AB</label>
+              <output id="oG" for="sG">48 km</output>
+            </div>
+            <input type="range" id="sG" min="10" max="150" step="2" value="48">
+          </div>
+          <div class="field field-a" id="f-sV2">
             <div class="field-head">
               <label for="sV2">Vận tốc ô tô</label>
               <output id="oV2" for="sV2">60 km/giờ</output>
@@ -753,7 +839,7 @@
       <section class="rules" aria-labelledby="can-nho">
         <h2 id="can-nho">Cần nhớ</h2>
         <p><b>Hiệu vận tốc</b> = vận tốc xe đi sau − vận tốc xe đi trước</p>
-        <p><b>Thời gian đuổi kịp</b> = khoảng cách lúc xe sau xuất phát : hiệu vận tốc</p>
+        <p><b>Thời gian đuổi kịp</b> = khoảng cách lúc xe sau bắt đầu đuổi : hiệu vận tốc</p>
         <p><b>Chỗ gặp nhau cách A</b> = vận tốc xe đi sau × thời gian đuổi kịp</p>
       </section>
     </aside>
@@ -769,69 +855,26 @@
 
   <script>
     // ============================================================
-    // HAI XE CHUYỂN ĐỘNG CÙNG CHIỀU - p5.js
-    // Xe máy đi trước t0 giờ, ô tô xuất phát cùng điểm A đuổi theo.
-    // t (giờ) tính từ lúc XE MÁY xuất phát.
+    // PHẦN DÙNG CHUNG cho các bài toán chuyển động
     // ============================================================
-
-    // --- KÍCH THƯỚC CANVAS (vẽ cố định, CSS tự co theo khung) ---
     const W = 800, H = 500;
-    const X0 = 100, X1 = 740;          // A ở X0; X1 là mốc cuối của thang km
-    const ROAD_TOP = 160, ROAD_BOT = 272;
-    const LANE_MOTO = 206, LANE_CAR = 249;
-    const DIAG_TOP = 292;
-    const LINE_Y = 420;
-    const CAR_HALF = 32, MOTO_HALF = 28;
+    const ROAD_TOP = 160, ROAD_BOT = 272, DIAG_TOP = 292;
 
     const COL = {
       ink: '#3B2A8C', text: '#1D2540', muted: '#5A6482',
-      a: '#E0443F', aText: '#C2302B',   // ô tô
-      b: '#0C9A88', bText: '#08776A',   // xe máy
+      a: '#E0443F', aText: '#C2302B',   // xe đỏ
+      b: '#0C9A88', bText: '#08776A',   // xe xanh
+      rest: '#E8A23A', restText: '#8A4B00',
       mark: '#FFE36E'
-    };
-
-    // --- TRẠNG THÁI ---
-    const st = {
-      v1: 40,          // vận tốc xe máy (đi trước)
-      t0: 3,           // xe máy đi trước bao nhiêu giờ
-      v2: 60,          // vận tốc ô tô (đi sau)
-      L: 500,          // độ dài thang km trên hình
-      t: 0,
-      dur: 8,          // số giây thực để chạy hết mô phỏng
-      running: false,
-      met: false,
-      metAt: 0,
-      revealed: false
     };
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const $ = id => document.getElementById(id);
-    let bg;
+    const blank = '<span class="blank">?</span>';
+    const num = (x, c) => `<span class="num num-${c}">${x}</span>`;
+    const round2 = n => Math.round(n * 100) / 100;
 
-    // ============================================================
-    // TOÁN
-    // ============================================================
-    const valid = () => st.v2 > st.v1;
-    const headStart = () => st.v1 * st.t0;               // km xe máy đi trước
-    const catchTime = () => headStart() / (st.v2 - st.v1); // giờ ô tô đi để đuổi kịp
-    const meetHour = () => st.t0 + catchTime();           // tính từ lúc xe máy xuất phát
-    const meetDist = () => st.v2 * catchTime();           // chỗ gặp cách A
-
-    // Thang km "đẹp": 5 vạch chia, chỗ gặp nằm khoảng 3/4 chiều dài
-    function niceStep(x) {
-      const mag = 10 ** Math.floor(Math.log10(x));
-      for (const m of [1, 2, 2.5, 5, 10]) if (m * mag >= x) return m * mag;
-      return 10 * mag;
-    }
-
-    function computeScale() {
-      const target = valid() ? meetDist() * 1.15 : headStart() * 3;
-      st.L = niceStep(target / 5) * 5;
-    }
-
-    // ============================================================
-    // ĐỊNH DẠNG SỐ KIỂU VIỆT NAM
-    // ============================================================
+    // --- Định dạng số kiểu Việt Nam ---
     function fmt(n, d = 2) {
       const r = Math.round(n * 10 ** d) / 10 ** d;
       return String(r).replace('.', ',');
@@ -842,6 +885,7 @@
       return Math.abs(k - Math.round(k)) < 1e-7;
     }
 
+    // 1.2 -> "1 giờ 12 phút"
     function hm(hours) {
       const total = Math.round(hours * 60);
       const h = Math.floor(total / 60), m = total % 60;
@@ -850,51 +894,46 @@
       return `${h} giờ ${m} phút`;
     }
 
-    // ============================================================
-    // p5: SETUP & DRAW
-    // ============================================================
-    function setup() {
-      const c = createCanvas(W, H);
-      c.parent('canvas-holder');
-      c.elt.setAttribute('aria-hidden', 'true');
-      bg = buildBackground();
-      textFont('Be Vietnam Pro');
-      computeScale();
-      syncAll();
+    // số phút tính từ 0 giờ -> "7 giờ 30 phút"
+    function clockStr(minutes) {
+      const total = Math.round(minutes);
+      const h = Math.floor(total / 60) % 24, m = total % 60;
+      return m === 0 ? `${h} giờ` : `${h} giờ ${m} phút`;
     }
 
-    function draw() {
-      if (st.running) {
-        const total = meetHour();
-        st.t += (deltaTime / 1000) * (total / st.dur);
-        if (st.t >= total) {
-          st.t = total;
-          st.running = false;
-          st.met = true;
-          st.metAt = millis();
-          onMeet();
-        }
-        updateReadout();
-      }
-
-      const px = (X1 - X0) / st.L;
-      const sMoto = st.v1 * st.t;
-      const sCar = st.v2 * Math.max(st.t - st.t0, 0);
-      const noseMoto = X0 + sMoto * px;
-      const noseCar = X0 + sCar * px;
-
-      image(bg, 0, 0);
-      drawRoadMarks();
-      if (st.met) drawMeetLine(noseCar);
-      drawMoto(noseMoto - MOTO_HALF, LANE_MOTO, sMoto * px);
-      drawCar(noseCar - CAR_HALF, LANE_CAR, COL.a, sCar * px);
-      if (st.t < st.t0 && valid()) drawWaitTag();
-      drawDiagram(px, noseMoto, noseCar, sMoto, sCar);
-      if (st.met) drawMeetTag(noseCar);
+    // Độ dài thang km "đẹp" chia được 5 vạch
+    function niceLength(km) {
+      const x = km / 5;
+      const mag = 10 ** Math.floor(Math.log10(x));
+      for (const m of [1, 2, 2.5, 5, 10]) if (m * mag >= x) return m * mag * 5;
+      return 50 * mag;
     }
 
-    // --- NỀN TĨNH ---
-    function buildBackground() {
+    // --- Các dòng hay dùng trong bài giải ---
+    function convLine(hours) {
+      return Number.isInteger(hours) ? '' : `<p>Đổi: ${hm(hours)} = ${fmt(hours)} giờ</p>`;
+    }
+
+    function minutesLine(T, r) {
+      if (!r || Number.isInteger(round2(T))) return '';
+      return `<p class="calc">${fmt(T)} giờ ${isExact(T * 60, 0) ? '=' : '≈'} ${hm(T)}</p>`;
+    }
+
+    function durationAns(T) {
+      return (isExact(T * 60, 0) ? '' : 'khoảng ') + hm(T);
+    }
+
+    function answerLine(r, items) {
+      const body = r
+        ? items.map((x, i) => `<mark class="hl" style="animation-delay:${(0.05 + i * 0.3).toFixed(2)}s">${x}</mark>`).join('; ') + '.'
+        : blank;
+      return `<p class="answer"><span class="u">Đáp số:</span> ${body}</p>`;
+    }
+
+    // ============================================================
+    // VẼ (p5.js)
+    // ============================================================
+    function buildBackground(laneMid) {
       const g = createGraphics(W, H);
       g.noStroke();
 
@@ -923,9 +962,9 @@
       g.rect(0, ROAD_TOP + 5, W, 2);
       g.rect(0, ROAD_BOT - 7, W, 2);
       g.fill('#F2F4F8');
-      const mid = (LANE_MOTO + LANE_CAR) / 2;
-      for (let x = 8; x < W; x += 48) g.rect(x, mid - 1.5, 26, 3, 1.5);
+      for (let x = 8; x < W; x += 48) g.rect(x, laneMid - 1.5, 26, 3, 1.5);
 
+      // vùng sơ đồ: giấy ô li
       g.fill('#FFFFFF');
       g.rect(0, DIAG_TOP, W, H - DIAG_TOP);
       g.stroke('#E4EAF5');
@@ -937,34 +976,37 @@
       return g;
     }
 
-    // --- MỐC A VÀ VẠCH KM ---
-    function drawRoadMarks() {
-      const meetX = st.met ? X0 + meetDist() * (X1 - X0) / st.L : null;
+    function badge(x, label, col) {
+      fill(col); stroke(255); strokeWeight(2);
+      circle(x, 126, 28);
+      noStroke(); fill(255);
+      textAlign(CENTER, CENTER); textSize(15); textStyle(BOLD);
+      text(label, x, 126);
+      textStyle(NORMAL);
+    }
+
+    // Vạch km ven đường: 5 khoảng từ X0 đến X1 ứng với L km
+    function drawRoadTicks(X0, X1, L, o = {}) {
       for (let i = 0; i <= 5; i++) {
         const x = X0 + (X1 - X0) * i / 5;
         stroke(COL.text); strokeWeight(2);
         line(x, 148, x, 159);
         noStroke();
-        if (i === 0) {
-          fill(COL.ink);
-          stroke(255); strokeWeight(2);
-          circle(x, 126, 28);
-          noStroke(); fill(255);
-          textAlign(CENTER, CENTER); textSize(15); textStyle(BOLD);
-          text('A', x, 126);
-        } else if (meetX === null || Math.abs(x - meetX) > 30) {
+        if (i === 0 && o.start) badge(x, o.start, o.startCol);
+        else if (i === 5 && o.end) badge(x, o.end, o.endCol);
+        else if (o.skipX == null || Math.abs(x - o.skipX) > 30) {
           fill(COL.text);
           textAlign(CENTER, BOTTOM); textSize(12); textStyle(NORMAL);
-          text(Math.round(st.L * i / 5) + ' km', x, 143);
+          text(o.hide ? '? km' : fmt(L * i / 5, 1) + ' km', x, 143);
         }
       }
-      textStyle(NORMAL);
     }
 
-    // --- Ô TÔ (đi sang phải) ---
-    function drawCar(cx, cy, col, travelledPx) {
+    // Ô tô: dir = +1 đi sang phải, -1 đi sang trái; đầu xe ở +32
+    function drawCar(cx, cy, col, dir, travelledPx) {
       push();
       translate(cx, cy);
+      scale(dir, 1);
       noStroke();
 
       fill(0, 0, 0, 45);
@@ -991,6 +1033,276 @@
       drawWheel(-18, 11, ang);
       drawWheel(18, 11, ang);
       pop();
+    }
+
+    function drawWheel(x, y, ang) {
+      push();
+      translate(x, y);
+      noStroke();
+      fill('#22283A'); circle(0, 0, 16);
+      fill('#C9D0DD'); circle(0, 0, 8);
+      rotate(ang);
+      stroke('#22283A'); strokeWeight(1.5);
+      line(-4, 0, 4, 0);
+      line(0, -4, 0, 4);
+      pop();
+    }
+
+    function dashedLine(x1, y1, x2, y2, col, w = 2, pattern = [6, 6]) {
+      stroke(col); strokeWeight(w);
+      drawingContext.setLineDash(pattern);
+      line(x1, y1, x2, y2);
+      drawingContext.setLineDash([]);
+    }
+
+    // Nhãn vàng trên cao khi có kết quả (hiện dần)
+    function topTag(x, label, since) {
+      const a = reduceMotion ? 255 : 255 * Math.min((millis() - since) / 350, 1);
+      textSize(15); textStyle(BOLD);
+      const w = textWidth(label) + 28;
+      const cx = constrain(x, w / 2 + 10, W - w / 2 - 10);
+      noStroke();
+      fill(255, 227, 110, a);
+      rect(cx - w / 2, 22, w, 34, 17);
+      fill(59, 42, 140, a);
+      textAlign(CENTER, CENTER);
+      text(label, cx, 39);
+      textStyle(NORMAL);
+    }
+
+    // Nhãn trắng nhỏ trên dải cỏ dưới đường
+    function roadsideTag(x, label, col, alignRight = false) {
+      textSize(12); textStyle(BOLD);
+      const w = textWidth(label) + 20;
+      const left = alignRight ? x - w : x;
+      noStroke();
+      fill(255, 255, 255, 235);
+      rect(left, ROAD_BOT + 1, w, 18, 9);
+      fill(col);
+      textAlign(LEFT, CENTER);
+      text(label, left + 10, ROAD_BOT + 10);
+      textStyle(NORMAL);
+    }
+
+    // Ngoặc đo đoạn x1..x2 kèm nhãn
+    function bracket(x1, x2, y, label, col) {
+      stroke(col); strokeWeight(1.5);
+      line(x1, y, x2, y);
+      line(x1, y - 6, x1, y + 6);
+      line(x2, y - 6, x2, y + 6);
+      noStroke();
+      textSize(13); textStyle(BOLD);
+      const lw = textWidth(label);
+      if (x2 - x1 > lw + 16) {
+        fill(255);
+        rect((x1 + x2) / 2 - lw / 2 - 6, y - 10, lw + 12, 20);
+        fill(col); textAlign(CENTER, CENTER);
+        text(label, (x1 + x2) / 2, y);
+      } else {
+        fill(col); textAlign(LEFT, CENTER);
+        text(label, x2 + 10, y);
+      }
+      textStyle(NORMAL);
+    }
+
+    // Mũi tên hai đầu đo toàn bộ đoạn, nhãn ở giữa
+    function spanArrow(x1, x2, y, label) {
+      stroke(COL.muted); strokeWeight(1.5);
+      line(x1, y, x2, y);
+      line(x1, y, x1 + 8, y - 5); line(x1, y, x1 + 8, y + 5);
+      line(x2, y, x2 - 8, y - 5); line(x2, y, x2 - 8, y + 5);
+      noStroke();
+      textSize(14); textStyle(BOLD);
+      const tw = textWidth(label) + 16;
+      fill(255); rect((x1 + x2) / 2 - tw / 2, y - 11, tw, 22);
+      fill(COL.ink); textAlign(CENTER, CENTER);
+      text(label, (x1 + x2) / 2, y);
+      textStyle(NORMAL);
+    }
+
+    // ============================================================
+    // NÚT BẤM + PHÍM TẮT
+    // ============================================================
+    const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5Z"/></svg>';
+    const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4.5" height="16" rx="1.2"/><rect x="13.5" y="4" width="4.5" height="16" rx="1.2"/></svg>';
+
+    function setRunButton(running, done, started, enabled = true) {
+      let label, icon = ICON_PLAY;
+      if (running) { label = 'Tạm dừng'; icon = ICON_PAUSE; }
+      else if (done) label = 'Chạy lại';
+      else if (started) label = 'Chạy tiếp';
+      else label = 'Cho xe chạy';
+      $('btnRun').innerHTML = icon + label;
+      $('btnRun').disabled = !enabled;
+    }
+
+    function bindCommon(toggle, reset, onRate) {
+      $('btnRun').addEventListener('click', toggle);
+      $('btnReset').addEventListener('click', reset);
+      document.querySelectorAll('input[name="rate"]').forEach(el =>
+        el.addEventListener('change', e => onRate(+e.target.value))
+      );
+      document.addEventListener('keydown', e => {
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        const tag = e.target.tagName;
+        if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') {
+          e.preventDefault();
+          toggle();
+        } else if (e.key === 'r' || e.key === 'R') {
+          reset();
+        }
+      });
+    }
+
+    function bindMode(onChange) {
+      document.querySelectorAll('input[name="mode"]').forEach(el =>
+        el.addEventListener('change', e => onChange(e.target.value))
+      );
+    }
+
+    // ============================================================
+    // HAI XE CHUYỂN ĐỘNG CÙNG CHIỀU
+    // Dạng 1 (late): xe máy đi từ A trước t0 giờ, ô tô đi từ A đuổi theo.
+    // Dạng 2 (gap):  cùng lúc, ô tô đi từ A, xe máy đi từ B (AB = g km), cùng chiều.
+    // t (giờ) tính từ lúc XE MÁY xuất phát. Mọi vị trí đo từ A.
+    // ============================================================
+    const X0 = 100, X1 = 740;          // A ở X0; X1 là mốc cuối của thang km
+    const LANE_MOTO = 206, LANE_CAR = 249;
+    const LINE_Y = 420;
+    const CAR_HALF = 32, MOTO_HALF = 28;
+
+    const st = {
+      mode: 'late',
+      v1: 40,          // vận tốc xe máy (đi trước)
+      t0: 3,           // dạng 1: xe máy đi trước bao nhiêu giờ
+      g: 48,           // dạng 2: quãng đường AB
+      v2: 60,          // vận tốc ô tô (đuổi theo)
+      L: 500,          // độ dài thang km trên hình
+      t: 0, dur: 8,
+      running: false, met: false, metAt: 0, revealed: false
+    };
+    let bg;
+
+    const delay = () => st.mode === 'late' ? st.t0 : 0;   // ô tô chờ bao lâu
+    const offset = () => st.mode === 'gap' ? st.g : 0;    // xe máy xuất phát cách A
+    const valid = () => st.v2 > st.v1;
+    const headStart = () => offset() + st.v1 * delay();    // khoảng cách lúc ô tô bắt đầu đuổi
+    const catchTime = () => headStart() / (st.v2 - st.v1); // giờ ô tô đi để đuổi kịp
+    const meetHour = () => delay() + catchTime();
+    const meetDist = () => st.v2 * catchTime();            // chỗ gặp cách A
+
+    function computeScale() {
+      st.L = niceLength(valid() ? meetDist() * 1.15 : Math.max(headStart(), 10) * 3);
+    }
+
+    function setup() {
+      const c = createCanvas(W, H);
+      c.parent('canvas-holder');
+      c.elt.setAttribute('aria-hidden', 'true');
+      bg = buildBackground((LANE_MOTO + LANE_CAR) / 2);
+      textFont('Be Vietnam Pro');
+      computeScale();
+      syncAll();
+    }
+
+    function draw() {
+      if (st.running) {
+        const total = meetHour();
+        st.t += (deltaTime / 1000) * (total / st.dur);
+        if (st.t >= total) {
+          st.t = total;
+          st.running = false;
+          st.met = true;
+          st.metAt = millis();
+          onMeet();
+        }
+        updateReadout();
+      }
+
+      const px = (X1 - X0) / st.L;
+      const sMoto = offset() + st.v1 * st.t;               // xe máy cách A
+      const sCar = st.v2 * Math.max(st.t - delay(), 0);    // ô tô cách A
+      const noseMoto = X0 + sMoto * px;
+      const noseCar = X0 + sCar * px;
+
+      image(bg, 0, 0);
+      drawRoadTicks(X0, X1, st.L, { start: 'A', startCol: COL.ink, skipX: st.met ? noseCar : null });
+      if (st.met) dashedLine(noseCar, 56, noseCar, LINE_Y, COL.ink);
+      drawMoto(noseMoto - MOTO_HALF, LANE_MOTO, st.v1 * st.t * px);
+      drawCar(noseCar - CAR_HALF, LANE_CAR, COL.a, +1, sCar * px);
+      if (delay() > 0 && st.t < delay() && valid()) {
+        roadsideTag(12, `Ô tô chờ ở A: còn ${hm(delay() - st.t)}`, COL.aText);
+      }
+      drawDiagram(px, noseMoto, noseCar, sMoto, sCar);
+      if (st.met) topTag(noseCar, `Đuổi kịp sau ${hm(catchTime())}, cách A ${fmt(meetDist(), 1)} km`, st.metAt);
+    }
+
+    // --- SƠ ĐỒ ĐOẠN THẲNG KIỂU SGK ---
+    function drawDiagram(px, noseMoto, noseCar, sMoto, sCar) {
+      noStroke();
+      textSize(14); textStyle(BOLD);
+      fill(COL.bText); textAlign(LEFT, CENTER);
+      text(`Xe máy ${st.v1} km/giờ →`, X0, 318);
+      fill(COL.aText); textAlign(RIGHT, CENTER);
+      text(`Ô tô ${st.v2} km/giờ →`, X1, 318);
+
+      // Thanh quãng đường đã đi: xe máy (trên) tính từ chỗ xuất phát, ô tô (dưới) từ A
+      const yMoto = 350, yCar = 386;
+      const startMoto = X0 + offset() * px;
+      fill(COL.b);
+      if (noseMoto > startMoto) rect(startMoto, yMoto - 4, noseMoto - startMoto, 8, 4);
+      fill(COL.a);
+      if (noseCar > X0) rect(X0, yCar - 4, noseCar - X0, 8, 4);
+
+      textSize(13); textAlign(LEFT, CENTER);
+      if (st.t > 0) { fill(COL.bText); text(`${fmt(st.v1 * st.t, 1)} km`, noseMoto + 8, yMoto); }
+      if (sCar > 0) { fill(COL.aText); text(`${fmt(sCar, 1)} km`, noseCar + 8, yCar); }
+
+      // Khoảng cách giữa hai xe
+      const midY = (yMoto + yCar) / 2;
+      if (!st.met && noseMoto - noseCar > 2) {
+        dashedLine(noseCar, midY, noseMoto, midY, COL.muted, 1.5, [4, 5]);
+        const label = `cách nhau ${fmt(sMoto - sCar, 1)} km`;
+        textSize(12); textStyle(NORMAL);
+        const w = textWidth(label) + 12;
+        if (noseMoto - noseCar > w + 10) {
+          noStroke(); fill(255);
+          const mx = (noseCar + noseMoto) / 2;
+          rect(mx - w / 2, midY - 10, w, 20, 4);
+          fill(COL.muted); textAlign(CENTER, CENTER);
+          text(label, mx, midY);
+        }
+      }
+
+      // Đoạn thẳng gốc
+      stroke(COL.text); strokeWeight(2);
+      line(X0, LINE_Y, X1, LINE_Y);
+      line(X0, LINE_Y - 8, X0, LINE_Y + 8);
+      noStroke(); fill(COL.text);
+      textAlign(CENTER, CENTER); textSize(16); textStyle(BOLD);
+      text('A', X0, LINE_Y + 24);
+
+      // Điểm B
+      if (valid() && (st.mode === 'gap' || st.t >= st.t0)) {
+        const xB = X0 + headStart() * px;
+        stroke(COL.bText); strokeWeight(2);
+        line(xB, LINE_Y - 8, xB, LINE_Y + 8);
+        noStroke(); fill(COL.bText);
+        textSize(16); textStyle(BOLD); textAlign(CENTER, CENTER);
+        text('B', xB, LINE_Y + 24);
+        bracket(X0, xB, 466, st.mode === 'gap'
+          ? `AB = ${fmt(st.g)} km`
+          : `xe máy đi trước ${fmt(headStart())} km`, COL.bText);
+      }
+
+      // Chỗ gặp nhau
+      if (st.met) {
+        noStroke(); fill(COL.ink);
+        circle(noseCar, LINE_Y, 11);
+        textAlign(CENTER, CENTER); textSize(16); textStyle(BOLD);
+        text('C', noseCar, LINE_Y + 24);
+      }
+      textStyle(NORMAL);
     }
 
     // --- XE MÁY kiểu xe số dáng Cub (đi sang phải) ---
@@ -1137,182 +1449,55 @@
       pop();
     }
 
-    function drawWheel(x, y, ang) {
-      push();
-      translate(x, y);
-      noStroke();
-      fill('#22283A'); circle(0, 0, 16);
-      fill('#C9D0DD'); circle(0, 0, 8);
-      rotate(ang);
-      stroke('#22283A'); strokeWeight(1.5);
-      line(-4, 0, 4, 0);
-      line(0, -4, 0, 4);
-      pop();
-    }
-
-    // --- Nhãn "ô tô đang chờ" trong giai đoạn xe máy đi trước ---
-    function drawWaitTag() {
-      const label = `Ô tô chờ ở A: còn ${hm(st.t0 - st.t)}`;
-      textSize(12); textStyle(BOLD);
-      const w = textWidth(label) + 20;
-      const x = 12;
-      noStroke();
-      fill(255, 255, 255, 235);
-      rect(x, ROAD_BOT + 1, w, 18, 9);
-      fill(COL.aText);
-      textAlign(LEFT, CENTER);
-      text(label, x + 10, ROAD_BOT + 10);
-      textStyle(NORMAL);
-    }
-
-    // --- SƠ ĐỒ ĐOẠN THẲNG KIỂU SGK ---
-    function drawDiagram(px, noseMoto, noseCar, sMoto, sCar) {
-      noStroke();
-      textSize(14); textStyle(BOLD);
-
-      // Chú thích
-      fill(COL.bText); textAlign(LEFT, CENTER);
-      text(`Xe máy ${st.v1} km/giờ →`, X0, 318);
-      fill(COL.aText); textAlign(RIGHT, CENTER);
-      text(`Ô tô ${st.v2} km/giờ →`, X1, 318);
-
-      // Thanh quãng đường xe máy (trên) và ô tô (dưới)
-      const yMoto = 350, yCar = 386;
-      fill(COL.b);
-      if (noseMoto > X0) rect(X0, yMoto - 4, noseMoto - X0, 8, 4);
-      fill(COL.a);
-      if (noseCar > X0) rect(X0, yCar - 4, noseCar - X0, 8, 4);
-
-      textSize(13); textAlign(LEFT, CENTER);
-      if (sMoto > 0) { fill(COL.bText); text(`${fmt(sMoto, 1)} km`, noseMoto + 8, yMoto); }
-      if (sCar > 0) { fill(COL.aText); text(`${fmt(sCar, 1)} km`, noseCar + 8, yCar); }
-
-      // Khoảng cách giữa hai xe
-      if (!st.met && noseMoto - noseCar > 2) {
-        stroke(COL.muted); strokeWeight(1.5);
-        drawingContext.setLineDash([4, 5]);
-        line(noseCar, (yMoto + yCar) / 2, noseMoto, (yMoto + yCar) / 2);
-        drawingContext.setLineDash([]);
-        const label = `cách nhau ${fmt(sMoto - sCar, 1)} km`;
-        textSize(12); textStyle(NORMAL);
-        const w = textWidth(label) + 12;
-        if (noseMoto - noseCar > w + 10) {
-          noStroke(); fill(255);
-          const mx = (noseCar + noseMoto) / 2;
-          rect(mx - w / 2, (yMoto + yCar) / 2 - 10, w, 20, 4);
-          fill(COL.muted); textAlign(CENTER, CENTER);
-          text(label, mx, (yMoto + yCar) / 2);
-        }
-      }
-
-      // Đoạn thẳng gốc
-      stroke(COL.text); strokeWeight(2);
-      line(X0, LINE_Y, X1, LINE_Y);
-      line(X0, LINE_Y - 8, X0, LINE_Y + 8);
-      noStroke(); fill(COL.text);
-      textAlign(CENTER, CENTER); textSize(16); textStyle(BOLD);
-      text('A', X0, LINE_Y + 24);
-
-      // Điểm B: chỗ xe máy đến khi ô tô bắt đầu xuất phát
-      if (st.t >= st.t0 && valid()) {
-        const xB = X0 + headStart() * px;
-        stroke(COL.bText); strokeWeight(2);
-        line(xB, LINE_Y - 8, xB, LINE_Y + 8);
-        noStroke(); fill(COL.bText);
-        text('B', xB, LINE_Y + 24);
-
-        // Ngoặc AB = khoảng cách xe máy đi trước
-        const by = 466;
-        stroke(COL.bText); strokeWeight(1.5);
-        line(X0, by, xB, by);
-        line(X0, by - 6, X0, by + 6);
-        line(xB, by - 6, xB, by + 6);
-        noStroke();
-        textSize(13); textStyle(BOLD);
-        const label = `xe máy đi trước ${fmt(headStart())} km`;
-        const lw = textWidth(label);
-        if (xB - X0 > lw + 16) {
-          fill(255); rect((X0 + xB) / 2 - lw / 2 - 6, by - 10, lw + 12, 20);
-          fill(COL.bText); textAlign(CENTER, CENTER);
-          text(label, (X0 + xB) / 2, by);
-        } else {
-          fill(COL.bText); textAlign(LEFT, CENTER);
-          text(label, xB + 10, by);
-        }
-      }
-      textStyle(NORMAL);
-    }
-
-    // --- CHỖ GẶP NHAU ---
-    function drawMeetLine(x) {
-      stroke(COL.ink); strokeWeight(2);
-      drawingContext.setLineDash([6, 6]);
-      line(x, 56, x, LINE_Y);
-      drawingContext.setLineDash([]);
-      noStroke();
-      fill(COL.ink);
-      circle(x, LINE_Y, 11);
-      textAlign(CENTER, CENTER); textSize(16); textStyle(BOLD);
-      text('C', x, LINE_Y + 24);
-      textStyle(NORMAL);
-    }
-
-    function drawMeetTag(x) {
-      const a = reduceMotion ? 255 : 255 * Math.min((millis() - st.metAt) / 350, 1);
-      const label = `Đuổi kịp sau ${hm(catchTime())}, cách A ${fmt(meetDist(), 1)} km`;
-      textSize(15); textStyle(BOLD);
-      const w = textWidth(label) + 28;
-      const cx = constrain(x, w / 2 + 10, W - w / 2 - 10);
-      noStroke();
-      fill(255, 227, 110, a);
-      rect(cx - w / 2, 22, w, 34, 17);
-      fill(59, 42, 140, a);
-      textAlign(CENTER, CENTER);
-      text(label, cx, 39);
-      textStyle(NORMAL);
-    }
-
     // ============================================================
     // DOM
     // ============================================================
     function updateProblem() {
-      $('pV1').textContent = `${st.v1} km/giờ`;
-      $('pT0').textContent = hm(st.t0);
-      $('pV2').textContent = `${st.v2} km/giờ`;
+      const V1 = num(`${st.v1} km/giờ`, 'b');
+      const V2 = num(`${st.v2} km/giờ`, 'a');
+      if (st.mode === 'gap') {
+        $('problemText').innerHTML = `
+          <p>Quãng đường AB dài ${num(`${st.g} km`, 't')}. Cùng một lúc, một ô tô đi từ A với vận tốc ${V2}
+          và một xe máy đi từ B với vận tốc ${V1}. Hai xe đi cùng chiều, ô tô đuổi theo xe máy. Hỏi:</p>
+          <ol>
+            <li>Sau bao lâu ô tô đuổi kịp xe máy?</li>
+            <li>Chỗ đuổi kịp cách A bao nhiêu ki-lô-mét?</li>
+          </ol>`;
+      } else {
+        $('problemText').innerHTML = `
+          <p>Một xe máy đi từ A với vận tốc ${V1}. Sau ${num(hm(st.t0), 't')}, một ô tô cũng đi từ A
+          đuổi theo xe máy với vận tốc ${V2}. Hỏi:</p>
+          <ol>
+            <li>Ô tô đuổi kịp xe máy sau bao lâu?</li>
+            <li>Lúc hai xe gặp nhau, chỗ gặp cách A bao nhiêu ki-lô-mét?</li>
+          </ol>`;
+      }
+
       $('oV1').textContent = `${st.v1} km/giờ`;
       $('oT0').textContent = hm(st.t0);
+      $('oG').textContent = `${st.g} km`;
       $('oV2').textContent = `${st.v2} km/giờ`;
+      $('f-sT0').hidden = st.mode !== 'late';
+      $('f-sG').hidden = st.mode !== 'gap';
 
       const n = $('notice');
-      if (valid()) {
-        n.hidden = true;
-      } else {
-        n.hidden = false;
-        n.textContent = `Vận tốc ô tô (${st.v2} km/giờ) không lớn hơn vận tốc xe máy (${st.v1} km/giờ) nên ô tô không bao giờ đuổi kịp. Hãy tăng vận tốc ô tô hoặc giảm vận tốc xe máy.`;
-      }
+      n.hidden = valid();
+      n.textContent = valid() ? '' :
+        `Vận tốc ô tô (${st.v2} km/giờ) không lớn hơn vận tốc xe máy (${st.v1} km/giờ) nên ô tô không bao giờ đuổi kịp. Hãy tăng vận tốc ô tô hoặc giảm vận tốc xe máy.`;
     }
 
     function updateReadout() {
-      const carT = Math.max(st.t - st.t0, 0);
-      const sMoto = st.v1 * st.t, sCar = st.v2 * carT;
-      $('rT').textContent = st.met && !isExact(carT * 60, 0) ? `≈ ${hm(carT)}` : hm(carT);
-      $('rTm').textContent = `xe máy: ${hm(st.t)}`;
+      const carT = Math.max(st.t - delay(), 0);
+      const sMoto = offset() + st.v1 * st.t, sCar = st.v2 * carT;
+      $('rT').textContent = (st.met && !isExact(carT * 60, 0) ? '≈ ' : '') + hm(carT);
+      $('rTm').textContent = delay() > 0 ? `xe máy: ${hm(st.t)}` : 'hai xe cùng xuất phát';
       $('rB').textContent = `${fmt(sMoto, 1)} km`;
       $('rA').textContent = `${fmt(sCar, 1)} km`;
       $('rGap').textContent = `${fmt(Math.max(sMoto - sCar, 0), 1)} km`;
     }
 
-    const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5Z"/></svg>';
-    const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4.5" height="16" rx="1.2"/><rect x="13.5" y="4" width="4.5" height="16" rx="1.2"/></svg>';
-
     function updateButtons() {
-      let label, icon = ICON_PLAY;
-      if (st.running) { label = 'Tạm dừng'; icon = ICON_PAUSE; }
-      else if (st.met) label = 'Chạy lại';
-      else if (st.t > 0) label = 'Chạy tiếp';
-      else label = 'Cho xe chạy';
-      $('btnRun').innerHTML = icon + label;
-      $('btnRun').disabled = !valid();
+      setRunButton(st.running, st.met, st.t > 0, valid());
       $('btnReveal').textContent = st.revealed ? 'Ẩn đáp án' : 'Hiện đáp án';
       $('btnReveal').hidden = st.met || !valid();
     }
@@ -1326,39 +1511,31 @@
         return;
       }
 
+      const r = st.revealed;
       const d0 = headStart();
       const dv = st.v2 - st.v1;
       const T = d0 / dv;
-      // Làm tròn thời gian đến 2 chữ số thập phân rồi dùng chính số đó để tính tiếp,
-      // giống cách học sinh làm trong vở.
-      const Tr = Math.round(T * 100) / 100;
-      const D = Math.round(st.v2 * Tr * 100) / 100;
-      const r = st.revealed;
-
-      const B = '<span class="blank">?</span>';
-      const v = x => r ? x : B;
+      const Tr = round2(T);
+      const D = round2(st.v2 * Tr);
+      const v = x => r ? x : blank;
       const eqT = r && !isExact(T) ? '≈' : '=';
-      const minutesExact = isExact(T * 60, 0);
-      const approx = isExact(T) ? '' : '≈ ';
+      const ap = isExact(T) ? '' : '≈ ';
 
-      const answer = r
-        ? `<mark class="hl" style="animation-delay:.05s">${minutesExact ? '' : 'khoảng '}${hm(T)}</mark>;
-           <mark class="hl" style="animation-delay:.35s">${approx}${fmt(D)} km</mark>.`
-        : B;
+      const lateStart = st.mode === 'late' ? `
+        ${convLine(st.t0)}
+        <p>Quãng đường xe máy đi trước là:</p>
+        <p class="calc">${st.v1} × ${fmt(st.t0)} = ${v(fmt(d0))} (km)</p>` : '';
 
       $('solution').innerHTML = `
-        ${Number.isInteger(st.t0) ? '' : `<p>Đổi: ${hm(st.t0)} = ${fmt(st.t0)} giờ</p>`}
-        <p>Quãng đường xe máy đi trước là:</p>
-        <p class="calc">${st.v1} × ${fmt(st.t0)} = ${v(fmt(d0))} (km)</p>
+        ${lateStart}
         <p>Hiệu vận tốc của hai xe là:</p>
         <p class="calc">${st.v2} − ${st.v1} = ${v(dv)} (km/giờ)</p>
         <p>Thời gian ô tô đuổi kịp xe máy là:</p>
-        <p class="calc">${r ? fmt(d0) : B} : ${r ? dv : B} ${eqT} ${v(fmt(T))} (giờ)</p>
-        ${r && !Number.isInteger(T) ? `<p class="calc">${fmt(T)} giờ ${minutesExact ? '=' : '≈'} ${hm(T)}</p>` : ''}
-        <p>Chỗ gặp nhau cách A là:</p>
-        <p class="calc">${st.v2} × ${r ? fmt(Tr) : B} = ${v(fmt(D))} (km)</p>
-        <p class="answer"><span class="u">Đáp số:</span> ${answer}</p>
-      `;
+        <p class="calc">${st.mode === 'gap' || r ? fmt(d0) : blank} : ${r ? dv : blank} ${eqT} ${v(fmt(T))} (giờ)</p>
+        ${minutesLine(T, r)}
+        <p>Chỗ ${st.mode === 'gap' ? 'đuổi kịp' : 'gặp nhau'} cách A là:</p>
+        <p class="calc">${st.v2} × ${r ? fmt(Tr) : blank} = ${v(fmt(D))} (km)</p>
+        ${answerLine(r, [durationAns(T), `${ap}${fmt(D)} km`])}`;
     }
 
     function syncAll() {
@@ -1376,6 +1553,7 @@
       st.running = false;
       st.met = false;
       st.revealed = false;
+      computeScale();
       syncAll();
     }
 
@@ -1401,33 +1579,19 @@
     function onParamChange() {
       st.v1 = +$('sV1').value;
       st.t0 = +$('sT0').value;
+      st.g = +$('sG').value;
       st.v2 = +$('sV2').value;
-      computeScale();
       resetSim();
     }
 
-    ['sV1', 'sT0', 'sV2'].forEach(id => $(id).addEventListener('input', onParamChange));
-    $('btnRun').addEventListener('click', toggleRun);
-    $('btnReset').addEventListener('click', resetSim);
+    ['sV1', 'sT0', 'sG', 'sV2'].forEach(id => $(id).addEventListener('input', onParamChange));
     $('btnReveal').addEventListener('click', () => {
       st.revealed = !st.revealed;
       renderSolution();
       updateButtons();
     });
-    document.querySelectorAll('input[name="rate"]').forEach(el =>
-      el.addEventListener('change', e => { st.dur = +e.target.value; })
-    );
-
-    document.addEventListener('keydown', e => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      const tag = e.target.tagName;
-      if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') {
-        e.preventDefault();
-        toggleRun();
-      } else if (e.key === 'r' || e.key === 'R') {
-        resetSim();
-      }
-    });
+    bindMode(m => { st.mode = m; resetSim(); });
+    bindCommon(toggleRun, resetSim, v => { st.dur = v; });
   </script>
 
 </body>
