@@ -1,7 +1,6 @@
 'use client';
 
-import { CalculatorIcon } from 'lucide-react';
-import ToolToggle from './ToolToggle';
+import { useTool } from './tools-context';
 import {
   useCallback, useEffect, useLayoutEffect, useRef, useState,
   type KeyboardEvent, type PointerEvent, type ReactNode,
@@ -134,8 +133,11 @@ function Result({ s }: { s: Shown }) {
 }
 
 
-export default function Calculator() {
-  const [open, setOpen] = useState(false);
+/** `page`: bản toàn trang /may-tinh (mở từ sidebar, tab mới): phím lớn, cả lịch sử 20 phép tính bên cạnh */
+export default function Calculator({ page = false }: { page?: boolean }) {
+  const tool = useTool('calculator');
+  const open = page || tool.open;
+  const setOpen = tool.setOpen;
   const [tokens, setTokens] = useState<Token[]>([]);
   const [cursor, setCursor] = useState(0);
   const [shift, setShift] = useState(false);
@@ -175,6 +177,10 @@ export default function Calculator() {
   useEffect(() => {
     if (open) panel.current?.focus();
   }, [open]);
+  // trang máy tính: gõ phím ở bất kỳ đâu trên trang cũng vào máy tính
+  useEffect(() => {
+    if (page) panel.current?.focus();
+  }, [page]);
 
   useLayoutEffect(() => {
     caret.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -265,7 +271,7 @@ export default function Calculator() {
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
-      setOpen(false);
+      if (!page) setOpen(false);
       return;
     }
     if (e.metaKey || e.ctrlKey || e.altKey || e.key === 'Tab') return;
@@ -301,34 +307,26 @@ export default function Calculator() {
   const shown = result && 'value' in result ? (frac && toFraction(result.value)) || show(result.value) : null;
   const canFrac = result && 'value' in result && toFraction(result.value) !== undefined;
 
-  return (
-    <>
-      <ToolToggle
-        label="Máy tính"
-        icon={<CalculatorIcon aria-hidden="true" />}
-        open={open}
-        controls="may-tinh"
-        onToggle={() => setOpen((o) => !o)}
-      />
-
-      {open && (
+  const body = open && (
         <div
-          id="may-tinh"
+          id={page ? undefined : 'may-tinh'}
           ref={panel}
-          className="calculator"
-          role="dialog"
+          className={`calculator${page ? ' is-page' : ''}`}
+          role={page ? 'region' : 'dialog'}
           aria-label="Máy tính khoa học"
           tabIndex={-1}
           data-own-keys=""
           onKeyDown={onKeyDown}
-          style={pos ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
+          style={pos && !page ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
         >
-          <div className="calc-bar" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd}>
-            <span>Máy tính khoa học</span>
-            <button type="button" className="calc-close" aria-label="Đóng máy tính" onClick={() => setOpen(false)}>
-              ×
-            </button>
-          </div>
+          {!page && (
+            <div className="calc-bar" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd}>
+              <span>Máy tính khoa học</span>
+              <button type="button" className="calc-close" aria-label="Đóng máy tính" onClick={() => setOpen(false)}>
+                ×
+              </button>
+            </div>
+          )}
 
           <div className="calc-screen">
             <div className="calc-status" aria-hidden="true">
@@ -378,10 +376,45 @@ export default function Calculator() {
             })}
           </div>
           <p className="calc-note">
-            Góc tính theo {angle === 'deg' ? 'độ' : 'radian'}. Gõ được bằng bàn phím: số, + − * /, ^, ( ), Enter, Backspace; Esc để đóng.
+            Góc tính theo {angle === 'deg' ? 'độ' : 'radian'}. Gõ được bằng bàn phím: số, + − * /, ^, ( ), Enter, Backspace
+            {page ? '.' : '; Esc để đóng.'}
           </p>
         </div>
-      )}
-    </>
+  );
+
+  if (!page) return <>{body}</>;
+
+  return (
+    <div className="tool-page-calc">
+      {body}
+      <aside className="calc-history-page" aria-label="Lịch sử phép tính">
+        <h2>Lịch sử ({history.length})</h2>
+        {history.length === 0 ? (
+          <p className="empty">Chưa có phép tính nào. Bấm vào một dòng để chèn kết quả vào biểu thức.</p>
+        ) : (
+          <>
+            <ol>
+              {history.map((h, i) => (
+                <li key={`${i}-${h.expr}`}>
+                  <button
+                    type="button"
+                    title="Chèn kết quả này"
+                    onClick={() => {
+                      run({ do: 'ins', tok: numberTokens(h.value) });
+                      panel.current?.focus();
+                    }}
+                  >
+                    <span>{h.expr}</span> = <b><Result s={show(h.value)} /></b>
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <button type="button" className="calc-clear" onClick={() => setHistory([])}>
+              Xóa lịch sử
+            </button>
+          </>
+        )}
+      </aside>
+    </div>
   );
 }

@@ -54,8 +54,7 @@ body {
    MASTHEAD
    ============================================================ */
 .masthead {
-  max-width: 1280px;
-  margin: 0 auto 22px;
+  margin: 0 0 22px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -109,8 +108,7 @@ body {
    WORKSPACE
    ============================================================ */
 .workspace {
-  max-width: 1280px;
-  margin: 0 auto;
+  margin: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
   gap: 24px;
@@ -509,8 +507,7 @@ body {
    FOOTER
    ============================================================ */
 .footnote {
-  max-width: 1280px;
-  margin: 22px auto 0;
+  margin: 22px 0 0;
   font-size: 14px;
   color: var(--muted);
 }
@@ -707,8 +704,7 @@ kbd {
    TRANG MỤC LỤC
    ============================================================ */
 .sheet {
-  max-width: 960px;
-  margin: 0 auto;
+  margin: 0;
   position: relative;
   background-color: var(--paper);
   background-image:
@@ -2514,7 +2510,7 @@ kbd {
   border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: grab;
-  background: #fff;
+  background: radial-gradient(ellipse at 50% 42%, #ffffff 0%, #ffffff 40%, #F3F1FB 100%);
 }
 
 .mol3d-grid.n3 .mol3d-view,
@@ -2688,34 +2684,167 @@ kbd {
   }
 }
 
+/* Khung xem 3D trong bảng tuần hoàn: cùng kiểu thẻ nguyên tố (tô nhạt theo họ), một hàng đầu duy nhất */
 .ptable-3d {
-  margin-top: 12px;
-  border: 1.5px solid var(--ink);
-  border-radius: var(--radius-sm);
+  --fam: #DCD5F5;
+  --fam-line: #9B8BD9;
+  margin-top: 14px;
+  background: color-mix(in srgb, var(--fam) 22%, #ffffff);
+  border: 1.5px solid var(--fam-line);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-}
-
-.ptable-3d-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 8px 6px 14px;
-  background: var(--ink);
-  color: #fff;
-  font-size: 14px;
-}
-
-.ptable-3d-head span {
-  opacity: 0.85;
-}
-
-.ptable-3d-head .calc-close {
-  margin-left: auto;
+  box-shadow: 0 14px 32px -24px rgba(59, 42, 140, 0.45);
 }
 
 .ptable-3d .mol3d {
   border-top: 0;
-  padding: 10px 12px 10px;
+  padding: 12px 16px 12px;
+}
+
+.ptable-3d .mol3d-head {
+  margin: -12px -16px 12px;
+  padding: 10px 12px 10px 16px;
+  background: color-mix(in srgb, var(--fam) 45%, #ffffff);
+  border-bottom: 1px solid color-mix(in srgb, var(--fam-line) 55%, transparent);
+}
+
+.ptable-3d-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ptable-3d-title > span:last-child {
+  display: grid;
+  line-height: 1.25;
+}
+
+.ptable-3d-title b {
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.ptable-3d-title em {
+  font-style: normal;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* ô nguyên tố thu nhỏ giống ô trong bảng */
+.ptable-3d-badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--fam);
+  border: 1.5px solid var(--fam-line);
+  font: 800 20px/1 var(--font-ui), system-ui, sans-serif;
+  color: var(--text);
+}
+
+.ptable-3d-badge small {
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.ptable-3d-badge.is-formula {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.ptable-3d .mol3d-tools {
+  align-items: center;
+}
+
+.ptable-3d .mol3d-tools button:not(.ptable-3d-close) {
+  border-color: color-mix(in srgb, var(--fam-line) 60%, var(--line));
+}
+
+.ptable-3d-close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-left: 4px;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  color: var(--muted) !important;
+}
+
+.ptable-3d-close:hover {
+  color: var(--ink) !important;
+  border-color: var(--ink) !important;
+}
+
+.ptable-3d .mol3d-pick button:not([aria-pressed='true']) {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.ptable-3d .mol3d-view {
+  height: 360px;
+  border-color: color-mix(in srgb, var(--fam-line) 45%, var(--line));
+  border-radius: 12px;
+  background:
+    radial-gradient(ellipse at 50% 42%, #ffffff 0%, #ffffff 35%, color-mix(in srgb, var(--fam) 28%, #ffffff) 100%);
+}
+
+.ptable-3d .mol3d-cell figcaption {
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+.ptable-3d .mol3d-cell figcaption > b {
+  font-size: 15px;
+}
+
+/* một mô hình: khung xem + chú thích bên cạnh, không kéo khung trống quá rộng */
+.ptable-3d .mol3d-grid.n1 .mol3d-cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px;
+  align-items: center;
+}
+
+.ptable-3d .mol3d-grid.n1 figcaption {
+  margin: 0;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid color-mix(in srgb, var(--fam-line) 40%, var(--line));
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+.ptable-3d .mol3d-grid.n1 figcaption > b {
+  font-size: 18px;
+}
+
+.ptable-3d .mol3d-grid.n1 figcaption .n {
+  margin-top: 4px;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .ptable-3d .mol3d-grid.n1 .mol3d-cell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.ptable-3d .mol3d-note {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed color-mix(in srgb, var(--fam-line) 50%, var(--line));
 }
 
 /* Chú giải màu nguyên tố dưới mô hình 3D */
@@ -3012,4 +3141,449 @@ kbd {
   margin-left: auto;
   font: 12px var(--font-ui), sans-serif;
   color: var(--muted);
+}
+
+/* ============================================================
+   FULL WIDTH: trang dùng hết bề ngang; màn hình rộng thì chia thêm cột
+   ============================================================ */
+@media (min-width: 1280px) {
+  /* danh sách bài trên trang lớp/môn/chủ đề: 2 cột trở lên */
+  .lesson-list {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 600px), 1fr));
+  }
+}
+
+@media (min-width: 1600px) {
+  /* bảng điều chỉnh rộng hơn chút khi màn chiếu/máy rộng */
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) 420px;
+  }
+}
+
+/* canvas giữ tỉ lệ 8:5 và không cao quá màn hình (trừ thanh đầu trang + khung Đề bài): cuộn tới Đề bài là thấy trọn cảnh khi chiếu */
+.canvas-holder {
+  background: var(--paper);
+}
+
+.canvas-holder canvas {
+  width: min(100%, max(480px, calc((100dvh - 220px) * 1.6))) !important;
+  margin-inline: auto;
+}
+
+/* ============================================================
+   TRANG CÔNG CỤ (mở từ sidebar, tab mới): /bang-tuan-hoan, /may-tinh
+   ============================================================ */
+.tool-page-head {
+  margin-bottom: 18px;
+}
+
+.tool-page-head h1 {
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ink);
+  margin: 4px 0 6px;
+}
+
+.tool-page-head p {
+  color: var(--muted);
+  max-width: 72ch;
+}
+
+/* bảng tuần hoàn toàn trang: nằm trong dòng chảy trang, ô giãn theo bề ngang */
+.ptable.is-page {
+  position: static;
+  width: auto;
+  max-height: none;
+  overflow: visible;
+  padding: 16px 20px 14px;
+  border-color: var(--line);
+  box-shadow: 0 18px 40px -24px rgba(59, 42, 140, 0.35);
+}
+
+.ptable.is-page .ptable-tools {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px 24px;
+  margin-bottom: 14px;
+}
+
+.ptable.is-page .ptable-tools .ptable-search {
+  flex: 0 1 420px;
+}
+
+.ptable.is-page .ptable-body {
+  grid-template-columns: 300px minmax(0, 1fr);
+}
+
+.ptable.is-page .ptable-grid {
+  width: 100%;
+  min-width: 900px;
+  grid-template-columns: 22px repeat(18, minmax(46px, 1fr));
+  grid-template-rows: 18px repeat(7, minmax(54px, 3.9vw)) 10px repeat(2, minmax(54px, 3.9vw));
+}
+
+.ptable.is-page .ptable-cell .z { font-size: clamp(9.5px, 0.7vw, 13px); }
+.ptable.is-page .ptable-cell .sym { font-size: clamp(17px, 1.45vw, 28px); }
+.ptable.is-page .ptable-cell .m { font-size: clamp(8.5px, 0.62vw, 12px); }
+
+.ptable-choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  padding: 0;
+}
+
+.ptable-choice legend {
+  float: left;
+  margin-right: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ptable-choice button {
+  font: 600 13.5px/1 var(--font-ui), system-ui, sans-serif;
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.ptable-choice button:hover {
+  border-color: var(--ink);
+}
+
+.ptable-choice button[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+/* thang màu nguyên tử khối */
+.ptable-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ptable-scale i {
+  width: 180px;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, hsl(252 70% 96%), hsl(252 70% 58%));
+  border: 1px solid hsl(252 45% 60%);
+}
+
+/* máy tính toàn trang: cố định giữa trang, phím lớn hơn */
+.calculator.is-page {
+  position: static;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  padding: 16px 20px 14px;
+  border-color: var(--line);
+  box-shadow: 0 18px 40px -24px rgba(59, 42, 140, 0.35);
+}
+
+.calculator.is-page .calc-key {
+  height: 54px;
+  font-size: 18px;
+}
+
+.calc-history-page ol {
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.calc-history-page button {
+  width: 100%;
+  text-align: left;
+  font: 500 16px/1.4 var(--font-ui), system-ui, sans-serif;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.calc-history-page button:hover {
+  border-color: var(--ink);
+}
+
+.calc-history-page .empty {
+  color: var(--muted);
+}
+
+.calc-history-page .calc-clear {
+  margin-top: 10px;
+  width: auto;
+  color: var(--muted);
+}
+
+.tool-page-calc {
+  display: grid;
+  grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.calc-history-page {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: 0 18px 40px -24px rgba(59, 42, 140, 0.35);
+}
+
+.calc-history-page h2 {
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+@media (max-width: 1100px) {
+  .ptable.is-page .ptable-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .tool-page-calc {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ============================================================
+   TRANG MỘT MÔN: thẻ chủ đề (shadcn Card) xếp masonry bằng cột CSS
+   ============================================================ */
+.topic-masonry {
+  columns: 1;
+  column-gap: 20px;
+  margin-top: 8px;
+}
+
+@media (min-width: 1000px) {
+  .topic-masonry { columns: 2; }
+}
+
+@media (min-width: 1700px) {
+  .topic-masonry { columns: 3; }
+}
+
+.topic-masonry > .topic-card {
+  break-inside: avoid;
+  margin-bottom: 20px;
+  scroll-margin-top: 64px;
+  background: var(--paper);
+  border-radius: 16px;
+  box-shadow: 0 1px 0 var(--line), 0 18px 36px -28px rgba(59, 42, 140, 0.45);
+  transition: box-shadow 0.15s;
+}
+
+.topic-masonry > .topic-card:hover {
+  box-shadow: 0 0 0 1.5px var(--ink-tint), 0 22px 40px -26px rgba(59, 42, 140, 0.55);
+}
+
+.topic-card-head {
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  column-gap: 12px;
+  align-items: start;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.topic-card-icon {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--ink-tint);
+  color: var(--ink);
+}
+
+.topic-card-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.topic-card-title {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.topic-card-title a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.topic-card-title a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.topic-card-intro {
+  grid-column: 2 / 4;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.topic-card-action {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.topic-card-count {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--ink-tint);
+}
+
+.topic-card-lessons {
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+/* một bài trong thẻ chủ đề: ảnh nhỏ + chữ */
+.mini-lesson {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 10px;
+  margin: 0 -10px;
+  border-radius: 12px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.mini-lesson:hover {
+  background: var(--ink-tint);
+}
+
+.mini-thumb {
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.mini-thumb .thumb {
+  width: 100%;
+  height: auto;
+}
+
+.mini-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mini-text .lesson-no {
+  font-size: 12.5px;
+}
+
+.mini-title {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.mini-summary {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mini-rule {
+  margin-top: 4px;
+  width: fit-content;
+  max-width: 100%;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--ink-tint);
+  padding: 3px 9px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.mini-lesson:hover .mini-rule {
+  background: #fff;
+}
+
+.topic-card-foot {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  padding-bottom: 14px;
+}
+
+.topic-card-foot a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.topic-card-foot svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.15s;
+}
+
+.topic-card-foot a:hover svg {
+  transform: translateX(3px);
+}
+
+/* điện thoại: thẻ hẹp (lề đỏ của vở chiếm chỗ) nên lời dẫn trải hết bề ngang, ảnh bài nằm trên chữ */
+@media (max-width: 560px) {
+  .topic-card-icon {
+    width: 34px;
+    height: 34px;
+    grid-row: 1;
+  }
+
+  .topic-card-title {
+    font-size: 18px;
+  }
+
+  .topic-card-intro {
+    grid-column: 1 / 4;
+  }
+
+  .mini-lesson {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .mini-thumb {
+    max-width: 180px;
+  }
 }

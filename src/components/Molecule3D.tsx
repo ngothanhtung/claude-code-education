@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { BY_SYMBOL } from '@/lib/elements';
 import { ALL3D, type Mol3D, type Mol3DGroup, type Mol3DId } from '@/lib/molecules3d';
 
@@ -140,7 +140,7 @@ function applyStyle(v: Viewer, mol: Mol3D, style: Style, spin: boolean) {
   v.zoomTo();
   // zoomTo chừa lề rộng; phân tử càng nhỏ càng cần phóng to để chiếm phần lớn khung
   // mô hình quả cầu (mạng kim loại, ion, khí hiếm) chiếm nhiều chỗ hơn nên phóng ít hơn
-  const k = mol.spheres ? (n <= 30 ? 1 : 0.9) : n <= 10 ? 2.3 : n <= 20 ? 1.8 : n <= 30 ? 1.45 : n <= 50 ? 1.1 : 0.95;
+  const k = mol.spheres ? (n <= 30 ? 1 : 0.78) : n <= 10 ? 2.3 : n <= 20 ? 1.8 : n <= 30 ? 1.45 : n <= 50 ? 1.1 : 0.82;
   v.zoom(style === 'dac' ? k * 0.85 : k);
   v.render();
   v.spin(spin ? 'y' : false, 0.5);
@@ -165,7 +165,8 @@ function Cell({ file, style, spin, onReady }: { file: Mol3DId; style: Style; spi
       try {
         const [$3Dmol, data] = await Promise.all([import('3dmol'), mol.gen ? Promise.resolve(mol.gen()) : loadSdf(file)]);
         if (cancelled) return;
-        const v = $3Dmol.createViewer(el, { backgroundColor: 'white', antialias: true }) as unknown as Viewer;
+        // nền trong suốt: khung .mol3d-view vẽ nền (gradient nhẹ) theo style của trang
+        const v = $3Dmol.createViewer(el, { backgroundColor: 'white', backgroundAlpha: 0, antialias: true }) as unknown as Viewer;
         v.addModel(data, mol.gen ? 'xyz' : 'sdf');
         // Nhãn tên nguyên tố ngay phía trên đúng nguyên tử: hiện khi rê chuột, bấm (chạm) để giữ hoặc bỏ
         const nameOf = (a: HoverAtom) => `${a.elem} (${BY_SYMBOL[a.elem]?.name ?? a.elem})`;
@@ -231,9 +232,9 @@ function Cell({ file, style, spin, onReady }: { file: Mol3DId; style: Style; spi
         {state !== 'ready' && <p className="mol3d-msg">{state === 'loading' ? 'Đang tải mô hình 3D…' : 'Không tải được mô hình 3D'}</p>}
       </div>
       <figcaption>
-        <b>{mol.name}</b> <span className="f">{mol.formula}</span>
+        <b>{mol.name}</b> {mol.formula !== mol.name && <span className="f">{mol.formula}</span>}
         <span className="n">{mol.note}</span>
-        {elems.length > 0 && (
+        {elems.length > 1 && (
           <span className="mol3d-legend" aria-label="Chú giải màu nguyên tố">
             {elems.map((el) => (
               <span key={el}>
@@ -256,7 +257,23 @@ function chipLabel(f: Mol3DId, files: Mol3DId[]) {
   return dup || m.formula.length > 12 ? m.name.split(' (')[0] : m.formula;
 }
 
-export default function Molecule3D({ files, value, groups = [], initialGroup }: { files: Mol3DId[]; value?: Mol3DId; groups?: Mol3DGroup[]; initialGroup?: number }) {
+export default function Molecule3D({
+  files,
+  value,
+  groups = [],
+  initialGroup,
+  title,
+  actions,
+}: {
+  files: Mol3DId[];
+  value?: Mol3DId;
+  groups?: Mol3DGroup[];
+  initialGroup?: number;
+  /** thay chữ "Mô hình 3D" ở đầu khung (vd. thẻ nguyên tố trong bảng tuần hoàn) */
+  title?: ReactNode;
+  /** nút thêm ở cuối hàng điều khiển (vd. nút đóng) */
+  actions?: ReactNode;
+}) {
   const [one, setOne] = useState<Mol3DId>(value ?? files[0]);
   const [group, setGroup] = useState<number | null>(initialGroup ?? null);
   const [style, setStyle] = useState<Style>('bong');
@@ -297,13 +314,14 @@ export default function Molecule3D({ files, value, groups = [], initialGroup }: 
   return (
     <section className="mol3d" aria-label="Mô hình phân tử 3D">
       <div className="mol3d-head">
-        <span className="mol3d-title">Mô hình 3D</span>
+        <span className="mol3d-title">{title ?? 'Mô hình 3D'}</span>
         <span className="mol3d-tools" role="group" aria-label="Điều khiển mô hình 3D">
           <button type="button" aria-pressed={style === 'bong'} onClick={() => setStyle('bong')}>Quả cầu – thanh nối</button>
           <button type="button" aria-pressed={style === 'dac'} onClick={() => setStyle('dac')}>Đặc</button>
           <button type="button" aria-pressed={spin} onClick={() => setSpin((x) => !x)}>Tự xoay</button>
           <button type="button" aria-label="Phóng to" onClick={() => zoomAll(1.2)}>+</button>
           <button type="button" aria-label="Thu nhỏ" onClick={() => zoomAll(1 / 1.2)}>−</button>
+          {actions}
         </span>
       </div>
       {(files.length > 1 || groups.length > 0) && (

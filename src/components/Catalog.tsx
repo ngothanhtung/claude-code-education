@@ -1,8 +1,13 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import {
+  CarIcon, FuelIcon, GaugeIcon, HammerIcon, LightbulbIcon, MountainIcon, RulerIcon, WheatIcon, WineIcon, ZapIcon,
+} from 'lucide-react';
 import { LESSON_THUMBS } from '@/components/LessonThumbs';
 import { Rich } from '@/components/Tex';
-import { lessonsOf, type TopicId } from '@/lib/lessons';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { getTopic, lessonsOf, topicHref, type TopicId } from '@/lib/lessons';
 
 /**
  * Khối dùng chung cho các trang mục lục: /classes/<no>/subjects, …/<môn>, …/<môn>/topics/<chủ đề>.
@@ -96,5 +101,79 @@ export function TeacherTip() {
       Gợi ý cho giáo viên: mở bài trên màn chiếu, cho học sinh tự tính trước, rồi bấm nút phát để kiểm tra. Phím{' '}
       <b>Space</b> để chạy hoặc tạm dừng, <b>R</b> để làm lại.
     </footer>
+  );
+}
+
+/** Icon (lucide) cho từng chủ đề, dùng ở thẻ chủ đề */
+export const TOPIC_ICON: Record<TopicId, ReactNode> = {
+  'chuyen-dong': <CarIcon />,
+  'do-luong': <RulerIcon />,
+  'nang-luong-co-hoc': <GaugeIcon />,
+  'quang-hoc': <LightbulbIcon />,
+  'dien-hoc': <ZapIcon />,
+  'kim-loai': <HammerIcon />,
+  hydrocarbon: <FuelIcon />,
+  'ruou-axit': <WineIcon />,
+  'hop-chat-thien-nhien': <WheatIcon />,
+  'vo-trai-dat': <MountainIcon />,
+};
+
+/**
+ * Trang một môn: mỗi chủ đề là một Card (shadcn/ui) xếp kiểu masonry (cột CSS, thẻ cao thấp khác nhau theo số bài).
+ * Thứ tự đọc: hết cột trái rồi sang cột phải.
+ */
+export function TopicMasonry({ topics }: { topics: TopicId[] }) {
+  return (
+    <div className="topic-masonry">
+      {topics.map((id) => {
+        const topic = getTopic(id);
+        const lessons = lessonsOf(id);
+        return (
+          <Card key={id} id={id} className="topic-card" aria-labelledby={`${id}-title`}>
+            <CardHeader className="topic-card-head">
+              <span className="topic-card-icon" aria-hidden="true">
+                {TOPIC_ICON[id]}
+              </span>
+              <CardTitle id={`${id}-title`} className="topic-card-title">
+                <Link href={topicHref(id)}>{topic.title}</Link>
+              </CardTitle>
+              <CardDescription className="topic-card-intro">{topic.intro}</CardDescription>
+              <CardAction className="topic-card-action">
+                <Badge variant="secondary" className="topic-card-count">
+                  {lessons.length} bài
+                </Badge>
+              </CardAction>
+            </CardHeader>
+            <CardContent className="topic-card-body">
+              <ol className="topic-card-lessons">
+                {lessons.map((l, i) => (
+                  <li key={l.slug}>
+                    <Link className="mini-lesson" href={`/${l.slug}`}>
+                      <span className="mini-thumb">{LESSON_THUMBS[l.slug]}</span>
+                      <span className="mini-text">
+                        <span className="lesson-no">Bài {i + 1}</span>
+                        <span className="mini-title">{l.title}</span>
+                        <span className="mini-summary">{l.summary}</span>
+                        <span className="mini-rule">
+                          <b>{l.rule.term}</b>
+                          {l.rule.text.startsWith('$') ? ': ' : ' = '}
+                          <Rich text={l.rule.text} />
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+            <CardFooter className="topic-card-foot">
+              <Link href={topicHref(id)}>
+                Xem chủ đề
+                <Arrow />
+              </Link>
+            </CardFooter>
+          </Card>
+        );
+      })}
+    </div>
   );
 }

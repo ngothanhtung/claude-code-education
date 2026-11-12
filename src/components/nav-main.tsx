@@ -15,17 +15,17 @@ import {
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 
-export interface NavTopic {
+export interface NavItem {
   title: string;
   url: string;
   icon: ReactNode;
   /** chứa trang đang xem: mở sẵn */
   isActive?: boolean;
-  items: { title: string; url: string; isActive?: boolean }[];
+  items: { title: string; url: string; icon?: ReactNode; isActive?: boolean }[];
 }
 
-/** Một môn học: các chủ đề thu gọn được, mở ra là danh sách bài (theo block sidebar-07 của shadcn/ui) */
-export function NavMain({ label, items }: { label: string; items: NavTopic[] }) {
+/** Phần "Nội dung": mỗi lớp là một mục thu gọn được, mở ra là các môn học (theo block sidebar-07 của shadcn/ui) */
+export function NavMain({ label, items }: { label: string; items: NavItem[] }) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{label}</SidebarGroupLabel>
@@ -42,17 +42,11 @@ export function NavMain({ label, items }: { label: string; items: NavTopic[] }) 
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton asChild>
-                      <Link href={item.url} className="text-sidebar-foreground/70">
-                        <span>Tất cả bài của chủ đề</span>
-                      </Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
                   {item.items.map((sub) => (
                     <SidebarMenuSubItem key={sub.url}>
                       <SidebarMenuSubButton asChild isActive={sub.isActive} className="h-auto min-h-7 py-1 [&>span:last-child]:whitespace-normal">
                         <Link href={sub.url} aria-current={sub.isActive ? 'page' : undefined}>
+                          {sub.icon}
                           <span>{sub.title}</span>
                         </Link>
                       </SidebarMenuSubButton>

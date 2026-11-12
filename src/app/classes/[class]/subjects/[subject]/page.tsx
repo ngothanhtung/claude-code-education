@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Arrow, CatalogHead, LessonCards, Tabs, TeacherTip } from '@/components/Catalog';
+import { CatalogHead, Tabs, TeacherTip, TopicMasonry } from '@/components/Catalog';
 import {
   SUBJECTS, classHref, getGrade, gradeByNo, lessonsOf, subjectBySlug, topicHref, topicsOf,
 } from '@/lib/lessons';
@@ -26,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: r ? `${r.subject.title} ${r.grade.no} – Các chủ đề` : 'Không tìm thấy môn' };
 }
 
-/** Một môn: các chủ đề, mỗi chủ đề kèm thẻ bài */
+/** Một môn: các chủ đề dạng thẻ (shadcn Card) xếp masonry, mỗi thẻ liệt kê các bài */
 export default async function SubjectPage({ params }: Props) {
   const r = await resolve(params);
   if (!r) notFound();
@@ -48,17 +47,7 @@ export default async function SubjectPage({ params }: Props) {
           items={topics.map((t) => ({ key: t.id, label: `${t.title} (${lessonsOf(t.id).length})`, href: topicHref(t.id) }))} />
       </CatalogHead>
 
-      {topics.map((topic) => (
-        <section key={topic.id} id={topic.id} className="topic" aria-labelledby={`${topic.id}-title`}>
-          <h2 id={`${topic.id}-title`} className="topic-title">
-            <Link href={topicHref(topic.id)}>
-              {topic.title}
-              <Arrow />
-            </Link>
-          </h2>
-          <LessonCards topic={topic.id} />
-        </section>
-      ))}
+      <TopicMasonry topics={topics.map((t) => t.id)} />
 
       <TeacherTip />
     </main>

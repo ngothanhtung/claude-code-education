@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <main className="sheet">
       <header className="sheet-head">
-        <div className="sheet-subject">Vở mô phỏng</div>
+        <div className="sheet-subject">SimBook · Vở mô phỏng</div>
         <h1>Chọn lớp</h1>
         <p>
           Mỗi bài có đề bài đổi được số liệu, hình minh họa chuyển động và bài giải mẫu theo cách trình bày trong vở.

@@ -1,22 +1,47 @@
 'use client';
 
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import {
+  Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent,
+} from 'react';
 import {
   CATEGORY_NAME, ELEMENTS, FAMILY_NAME, VALENCE, calcMass, formulaMass, groupName, shells,
-  type ElementInfo, type Family,
+  type Category, type ElementInfo, type Family,
 } from '@/lib/elements';
+import { cu } from '@/lib/chem';
 import { fmt } from '@/lib/format';
 import { solidOf, view3dOfFormula, type SolidView } from '@/lib/molecules3d';
-import { Grid3x3Icon } from 'lucide-react';
 import BohrModel from './BohrModel';
-import ToolToggle from './ToolToggle';
+import { useTool } from './tools-context';
 import Molecule3D from './Molecule3D';
 
 /**
  * Bảng tuần hoàn dạng cửa sổ nổi cho các bài Hóa học: tra cứu nhanh nguyên tố
  * (số hiệu, nhóm, chu kì, nguyên tử khối, hóa trị, lớp electron) và tính khối lượng mol.
  * Phím mũi tên chuyển ô, gõ để tìm, Esc để đóng; phím tắt của mô phỏng không bị kích hoạt.
+ * `page`: bản toàn trang /bang-tuan-hoan (mở từ sidebar, tab mới): ô lớn hơn, tô màu theo loại / kim loại–phi kim /
+ * nguyên tử khối, làm nổi bật cùng nhóm hoặc cùng chu kì, đường dẫn ?z=26 để chia sẻ.
  */
+
+type ColorMode = 'family' | 'category' | 'mass';
+type Highlight = 'none' | 'group' | 'period';
+
+const CATEGORY_VAR: Record<Category, [string, string]> = {
+  kimloai: ['var(--kl)', 'var(--kl-line)'],
+  phikim: ['var(--pk)', 'var(--pk-line)'],
+  khihiem: ['var(--kh)', 'var(--kh-line)'],
+};
+
+/** Màu ô theo nguyên tử khối: nhẹ = nhạt, nặng = tím đậm */
+const massColor = (m: number) => {
+  const t = Math.min(1, Math.max(0, (m - 1) / 293));
+  return [`hsl(252 70% ${96 - t * 38}%)`, `hsl(252 45% ${72 - t * 30}%)`];
+};
+
+function cellColor(e: ElementInfo, mode: ColorMode): CSSProperties | undefined {
+  if (mode === 'family') return undefined;
+  const [fam, line] = mode === 'category' ? CATEGORY_VAR[e.category] : massColor(e.mass);
+  return { '--fam': fam, '--fam-line': line } as CSSProperties;
+}
 
 const STORE = 'vo-mo-phong:bang-tuan-hoan';
 const massText = (e: ElementInfo) => (e.radio ? `(${e.mass})` : String(e.mass).replace('.', ','));
@@ -37,19 +62,24 @@ function matches(e: ElementInfo, q: string) {
   return e.symbol.toLowerCase() === l || e.name.startsWith(l) || (l.length >= 3 && e.name.includes(l));
 }
 
-export default function PeriodicTable() {
-  const [open, setOpen] = useState(false);
+export default function PeriodicTable({ page = false }: { page?: boolean }) {
+  const tool = useTool('periodicTable');
+  const open = page || tool.open;
+  const setOpen = tool.setOpen;
   const [z, setZ] = useState(26);
   const [query, setQuery] = useState('');
-  const [focusCat, setFocusCat] = useState<Family | null>(null);
+  const [focusCat, setFocusCat] = useState<Family | Category | null>(null);
+  const [mode, setMode] = useState<ColorMode>('family');
+  const [hl, setHl] = useState<Highlight>('none');
   const [formula, setFormula] = useState('');
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   /** ô 3D trong cửa sổ: đơn chất của nguyên tố, hoặc chất có công thức vừa gõ */
-  const [view3d, setView3d] = useState<{ key: string; title: string; view: SolidView } | null>(null);
+  const [view3d, setView3d] = useState<{ key: string; title: string; view: SolidView; el?: ElementInfo } | null>(null);
   const panel3d = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const grid = useRef<HTMLDivElement>(null);
   const loaded = useRef(false);
+  const urlZ = useRef<number | null>(null);
 
   // Nhớ nguyên tố đang chọn và công thức vừa tính giữa các bài
   useEffect(() => {
@@ -58,18 +88,24 @@ export default function PeriodicTable() {
       if (s?.z && s.z >= 1 && s.z <= 118) setZ(s.z);
       if (typeof s?.formula === 'string') setFormula(s.formula);
     } catch {}
+    // trang đầy đủ: ?z=26 trên đường dẫn được ưu tiên (đọc một lần, trước khi effect dưới ghi lại đường dẫn)
+    if (page) {
+      urlZ.current ??= Number(new URLSearchParams(window.location.search).get('z'));
+      if (urlZ.current >= 1 && urlZ.current <= 118) setZ(urlZ.current);
+    }
     loaded.current = true;
-  }, []);
+  }, [page]);
   useEffect(() => {
     if (!loaded.current) return;
     try {
       localStorage.setItem(STORE, JSON.stringify({ z, formula }));
     } catch {}
-  }, [z, formula]);
+    if (page) window.history.replaceState(null, '', `?z=${z}`);
+  }, [z, formula, page]);
 
   useEffect(() => {
-    if (open) panel.current?.focus();
-  }, [open]);
+    if (open && !page) panel.current?.focus();
+  }, [open, page]);
 
   const el = ELEMENTS[z - 1];
   const q = query.trim();
@@ -97,7 +133,7 @@ export default function PeriodicTable() {
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
-      setOpen(false);
+      if (!page) setOpen(false);
       return;
     }
     if (e.metaKey || e.ctrlKey || e.altKey || e.key === 'Tab') return;
@@ -132,8 +168,8 @@ export default function PeriodicTable() {
 
   const sh = shells(el.z);
   const formula3d = 'error' in mass ? undefined : view3dOfFormula(formula);
-  const show3d = (key: string, title: string, view: SolidView) => {
-    setView3d({ key, title, view });
+  const show3d = (key: string, title: string, view: SolidView, of?: ElementInfo) => {
+    setView3d({ key, title, view, el: of });
     requestAnimationFrame(() => panel3d.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
   };
   // nguyên tố chưa rõ tính chất (Z ≥ 109): không suy ra số electron ngoài cùng
@@ -142,32 +178,26 @@ export default function PeriodicTable() {
 
   return (
     <>
-      <ToolToggle
-        label="Bảng tuần hoàn"
-        icon={<Grid3x3Icon aria-hidden="true" />}
-        open={open}
-        controls="bang-tuan-hoan"
-        onToggle={() => setOpen((o) => !o)}
-      />
-
       {open && (
         <div
-          id="bang-tuan-hoan"
+          id={page ? undefined : 'bang-tuan-hoan'}
           ref={panel}
-          className="ptable"
-          role="dialog"
+          className={`ptable${page ? ' is-page' : ''}`}
+          role={page ? 'region' : 'dialog'}
           aria-label="Bảng tuần hoàn các nguyên tố hóa học"
           tabIndex={-1}
           data-own-keys=""
           onKeyDown={onKeyDown}
-          style={pos ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
+          style={pos && !page ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
         >
-          <div className="calc-bar" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd}>
-            <span>Bảng tuần hoàn các nguyên tố hóa học</span>
-            <button type="button" className="calc-close" aria-label="Đóng bảng tuần hoàn" onClick={() => setOpen(false)}>
-              ×
-            </button>
-          </div>
+          {!page && (
+            <div className="calc-bar" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd}>
+              <span>Bảng tuần hoàn các nguyên tố hóa học</span>
+              <button type="button" className="calc-close" aria-label="Đóng bảng tuần hoàn" onClick={() => setOpen(false)}>
+                ×
+              </button>
+            </div>
+          )}
 
           <div className="ptable-tools">
             <label className="ptable-search">
@@ -182,6 +212,33 @@ export default function PeriodicTable() {
                 }}
               />
             </label>
+            {page && (
+              <>
+                <Choice
+                  legend="Tô màu theo"
+                  value={mode}
+                  onChange={(m) => {
+                    setMode(m);
+                    setFocusCat(null);
+                  }}
+                  options={[
+                    ['family', 'Họ nguyên tố'],
+                    ['category', 'Kim loại – phi kim'],
+                    ['mass', 'Nguyên tử khối'],
+                  ]}
+                />
+                <Choice
+                  legend="Làm nổi bật"
+                  value={hl}
+                  onChange={setHl}
+                  options={[
+                    ['none', 'Không'],
+                    ['group', `Cùng nhóm với ${el.symbol}`],
+                    ['period', `Cùng chu kì với ${el.symbol}`],
+                  ]}
+                />
+              </>
+            )}
           </div>
 
           <div className="ptable-body">
@@ -234,7 +291,7 @@ export default function PeriodicTable() {
                   + Thêm {el.symbol} vào công thức
                 </button>
                 {solidOf(el.symbol) && (
-                  <button type="button" className="ptable-add" onClick={() => show3d(`el-${el.symbol}`, `Đơn chất ${el.name}`, solidOf(el.symbol)!)}>
+                  <button type="button" className="ptable-add" onClick={() => show3d(`el-${el.symbol}`, `Đơn chất ${el.name}`, solidOf(el.symbol)!, el)}>
                     Xem đơn chất 3D
                   </button>
                 )}
@@ -261,23 +318,48 @@ export default function PeriodicTable() {
 
                 {/* Chú giải màu ở khoảng trống phía trên các nhóm B */}
                 <div className="ptable-legend in-grid" style={{ gridColumn: '4 / 14', gridRow: '2 / 5' }} role="group" aria-label="Tô đậm theo loại nguyên tố">
-                  {(Object.keys(FAMILY_NAME) as Family[]).map((c) => (
-                    <button key={c} type="button" className={`fam-${c}`} aria-pressed={focusCat === c} onClick={() => setFocusCat((f) => (f === c ? null : c))}>
+                  {mode === 'family' &&
+                    (Object.keys(FAMILY_NAME) as Family[]).map((c) => (
+                      <button key={c} type="button" className={`fam-${c}`} aria-pressed={focusCat === c} onClick={() => setFocusCat((f) => (f === c ? null : c))}>
+                        <i aria-hidden="true" />
+                        {FAMILY_NAME[c]}
+                      </button>
+                    ))}
+                  {mode === 'category' &&
+                    (Object.keys(CATEGORY_NAME) as Category[]).map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        style={{ '--fam': CATEGORY_VAR[c][0], '--fam-line': CATEGORY_VAR[c][1] } as CSSProperties}
+                        className="fam-custom"
+                        aria-pressed={focusCat === c}
+                        onClick={() => setFocusCat((f) => (f === c ? null : c))}
+                      >
+                        <i aria-hidden="true" />
+                        {CATEGORY_NAME[c]}
+                      </button>
+                    ))}
+                  {mode === 'mass' && (
+                    <span className="ptable-scale">
+                      <span>1 (nhẹ)</span>
                       <i aria-hidden="true" />
-                      {FAMILY_NAME[c]}
-                    </button>
-                  ))}
+                      <span>294 (nặng)</span>
+                    </span>
+                  )}
                 </div>
 
                 {ELEMENTS.map((e) => {
-                  const dim = (q && !matches(e, q)) || (focusCat && e.family !== focusCat);
+                  const off =
+                    (hl === 'group' && (el.fRow ? !(e.fRow && e.period === el.period) : e.fRow || e.group !== el.group)) ||
+                    (hl === 'period' && e.period !== el.period);
+                  const dim = (q && !matches(e, q)) || (focusCat && (mode === 'category' ? e.category : e.family) !== focusCat) || off;
                   return (
                     <button
                       key={e.z}
                       type="button"
                       data-z={e.z}
                       className={`ptable-cell fam-${e.family}${e.z === z ? ' is-selected' : ''}${dim ? ' is-dim' : ''}`}
-                      style={cellPos(e)}
+                      style={{ ...cellPos(e), ...cellColor(e, mode) }}
                       aria-label={`${e.z} ${e.name}`}
                       aria-pressed={e.z === z}
                       tabIndex={e.z === z ? 0 : -1}
@@ -295,15 +377,34 @@ export default function PeriodicTable() {
           </div>
 
           {view3d && (
-            <div className="ptable-3d" ref={panel3d}>
-              <div className="ptable-3d-head">
-                <b>{view3d.title}</b>
-                {view3d.view.kind && <span>{view3d.view.kind}</span>}
-                <button type="button" className="calc-close" aria-label="Đóng mô hình 3D" onClick={() => setView3d(null)}>
-                  ×
-                </button>
-              </div>
-              <Molecule3D key={view3d.key} files={view3d.view.files} groups={view3d.view.groups} initialGroup={view3d.view.initialGroup} />
+            <div className={`ptable-3d${view3d.el ? ` fam-${view3d.el.family}` : ''}`} ref={panel3d}>
+              <Molecule3D
+                key={view3d.key}
+                files={view3d.view.files}
+                groups={view3d.view.groups}
+                initialGroup={view3d.view.initialGroup}
+                title={
+                  <span className="ptable-3d-title">
+                    {view3d.el ? (
+                      <span className="ptable-3d-badge" aria-hidden="true">
+                        <small>{view3d.el.z}</small>
+                        {view3d.el.symbol}
+                      </span>
+                    ) : (
+                      <span className="ptable-3d-badge is-formula" aria-hidden="true">3D</span>
+                    )}
+                    <span>
+                      <b>{view3d.title}</b>
+                      {view3d.view.kind && <em>{view3d.view.kind}</em>}
+                    </span>
+                  </span>
+                }
+                actions={
+                  <button type="button" className="ptable-3d-close" aria-label="Đóng mô hình 3D" onClick={() => setView3d(null)}>
+                    ×
+                  </button>
+                }
+              />
             </div>
           )}
 
@@ -336,7 +437,7 @@ export default function PeriodicTable() {
                     M = <b>{fmt(mass.M)}</b> g/mol
                   </span>
                   {formula3d && (
-                    <button type="button" className="ptable-add" onClick={() => show3d(`f-${formula}`, `Mô hình 3D: ${formula.trim()}`, formula3d)}>
+                    <button type="button" className="ptable-add" onClick={() => show3d(`f-${formula}`, `Mô hình 3D: ${cu(formula.trim())}`, formula3d)}>
                       Xem 3D
                     </button>
                   )}
@@ -353,3 +454,26 @@ export default function PeriodicTable() {
   );
 }
 
+/** Nhóm nút chọn một (giống Segmented của bài học) cho thanh công cụ của trang bảng tuần hoàn */
+function Choice<T extends string>({
+  legend,
+  value,
+  onChange,
+  options,
+}: {
+  legend: string;
+  value: T;
+  onChange: (v: T) => void;
+  options: [T, string][];
+}) {
+  return (
+    <fieldset className="ptable-choice">
+      <legend>{legend}</legend>
+      {options.map(([v, label]) => (
+        <button key={v} type="button" aria-pressed={value === v} onClick={() => onChange(v)}>
+          {label}
+        </button>
+      ))}
+    </fieldset>
+  );
+}

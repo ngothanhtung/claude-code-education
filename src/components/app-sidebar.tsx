@@ -3,16 +3,12 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, type ComponentProps, type ReactNode } from 'react';
-import {
-  AtomIcon, CarIcon, FlaskConicalIcon, FuelIcon, GaugeIcon, HammerIcon, HouseIcon, LightbulbIcon, MountainIcon,
-  RulerIcon, SearchIcon, SigmaIcon, WheatIcon, WineIcon, ZapIcon,
-} from 'lucide-react';
-import { GradeSwitcher } from '@/components/grade-switcher';
-import { NavMain, type NavTopic } from '@/components/nav-main';
+import { AtomIcon, BackpackIcon, BookOpenIcon, ExternalLinkIcon, FlaskConicalIcon, GraduationCapIcon, SearchIcon, SigmaIcon } from 'lucide-react';
+import { NavMain, type NavItem } from '@/components/nav-main';
+import { TOOLS, type ToolId } from '@/components/tools-context';
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
@@ -24,26 +20,20 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import {
-  GRADES, LESSONS, getGrade, getSubject, getTopic, gradeByNo, lessonsOf, subjectBySlug, subjectHref, subjectsOf, topicHref,
-  topicsOf, type GradeId, type SubjectId, type TopicId,
+  GRADES, LESSONS, classHref, getGrade, getSubject, getTopic, gradeByNo, subjectBySlug, subjectHref, subjectsOf,
+  type GradeId, type SubjectId,
 } from '@/lib/lessons';
 
 /**
  * Mục lục toàn hệ thống theo block sidebar-07 của shadcn/ui (thu gọn còn dải icon).
- * Dữ liệu lấy từ lib/lessons.ts: Lớp (menu đầu) → Môn (nhóm) → Chủ đề (mục thu gọn được) → Bài.
+ * Hai phần lớn:
+ *  - Nội dung: Lớp (mục thu gọn được) → Môn học (trang tổng hợp của môn)
+ *  - Tiện ích & công cụ: Bảng tuần hoàn, Máy tính bản toàn trang (/bang-tuan-hoan, /may-tinh) trong tab mới
  */
 
-const TOPIC_ICON: Record<TopicId, ReactNode> = {
-  'chuyen-dong': <CarIcon />,
-  'do-luong': <RulerIcon />,
-  'nang-luong-co-hoc': <GaugeIcon />,
-  'quang-hoc': <LightbulbIcon />,
-  'dien-hoc': <ZapIcon />,
-  'kim-loai': <HammerIcon />,
-  hydrocarbon: <FuelIcon />,
-  'ruou-axit': <WineIcon />,
-  'hop-chat-thien-nhien': <WheatIcon />,
-  'vo-trai-dat': <MountainIcon />,
+const GRADE_ICON: Record<GradeId, ReactNode> = {
+  'lop-5': <BackpackIcon />,
+  'lop-9': <GraduationCapIcon />,
 };
 
 const SUBJECT_ICON: Record<SubjectId, ReactNode> = {
@@ -56,20 +46,34 @@ const SUBJECT_ICON: Record<SubjectId, ReactNode> = {
 const plain = (s: string) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
 
-/** Lớp, môn, chủ đề, bài ứng với đường dẫn hiện tại */
-function locate(path: string): { grade?: GradeId; subject?: SubjectId; topic?: TopicId; lesson?: string } {
+/** Công cụ bản toàn trang, mở trong tab mới (nút tròn trong bài học vẫn mở cửa sổ nổi) */
+function ToolItem({ tool, href }: { tool: ToolId; href: string }) {
+  const { label, icon: Icon } = TOOLS[tool];
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild tooltip={`${label} (tab mới)`}>
+        <a href={href} target="_blank" rel="noopener">
+          <Icon />
+          <span>{label}</span>
+          <ExternalLinkIcon className="ml-auto opacity-50" aria-label="mở trong tab mới" />
+        </a>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+/** Lớp, môn, bài ứng với đường dẫn hiện tại */
+function locate(path: string): { grade?: GradeId; subject?: SubjectId; lesson?: string } {
   const seg = path.split('/').filter(Boolean);
   if (seg[0] === 'classes') {
     const grade = gradeByNo(seg[1] ?? '');
     const subject = grade && seg[3] ? subjectBySlug(grade.id, seg[3]) : undefined;
-    const topic = subject && seg[4] === 'topics' ? topicsOf(subject.id).find((t) => t.id === seg[5]) : undefined;
-    return { grade: grade?.id, subject: subject?.id, topic: topic?.id };
+    return { grade: grade?.id, subject: subject?.id };
   }
   const lesson = LESSONS.find((l) => l.slug === seg[0]);
   if (!lesson) return {};
-  const topic = getTopic(lesson.topic);
-  const subject = getSubject(topic.subject);
-  return { grade: subject.grade, subject: subject.id, topic: topic.id, lesson: lesson.slug };
+  const subject = getSubject(getTopic(lesson.topic).subject);
+  return { grade: subject.grade, subject: subject.id, lesson: lesson.slug };
 }
 
 export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
@@ -77,15 +81,13 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
   const here = useMemo(() => locate(path), [path]);
-  const [grade, setGrade] = useState<GradeId>(here.grade ?? GRADES[GRADES.length - 1].id);
   const [query, setQuery] = useState('');
 
-  // chuyển trang: lớp theo trang mới, đóng ngăn kéo trên điện thoại, xóa ô tìm
+  // chuyển trang: đóng ngăn kéo trên điện thoại, xóa ô tìm
   useEffect(() => {
-    if (here.grade) setGrade(here.grade);
     setOpenMobile(false);
     setQuery('');
-  }, [path, here.grade, setOpenMobile]);
+  }, [path, setOpenMobile]);
 
   const q = plain(query.trim());
   const hits = useMemo(
@@ -100,19 +102,37 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
     [q],
   );
 
-  const navOf = (subject: SubjectId): NavTopic[] =>
-    topicsOf(subject).map((t) => ({
-      title: t.title,
-      url: topicHref(t.id),
-      icon: TOPIC_ICON[t.id],
-      isActive: here.topic === t.id,
-      items: lessonsOf(t.id).map((l) => ({ title: l.title, url: `/${l.slug}`, isActive: here.lesson === l.slug })),
-    }));
+  const content: NavItem[] = GRADES.map((g) => ({
+    title: g.title,
+    url: classHref(g.id),
+    icon: GRADE_ICON[g.id],
+    isActive: here.grade === g.id,
+    items: subjectsOf(g.id).map((s) => ({
+      title: s.title,
+      url: subjectHref(s.id),
+      icon: SUBJECT_ICON[s.id],
+      isActive: here.subject === s.id,
+    })),
+  }));
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader data-own-keys="">
-        <GradeSwitcher grade={grade} onChange={setGrade} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild tooltip="SimBook – chọn lớp" isActive={path === '/'}>
+              <Link href="/">
+                <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <BookOpenIcon className="size-4" />
+                </span>
+                <span className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">SimBook</span>
+                  <span className="truncate text-xs">Vở mô phỏng</span>
+                </span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <div className="relative group-data-[collapsible=icon]:hidden">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 opacity-50" />
           <SidebarInput
@@ -141,7 +161,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
                   <SidebarMenuItem key={l.slug}>
                     <SidebarMenuButton asChild isActive={here.lesson === l.slug} className="h-auto py-1.5">
                       <Link href={`/${l.slug}`}>
-                        {TOPIC_ICON[t.id]}
+                        {SUBJECT_ICON[s.id]}
                         <span className="grid leading-tight">
                           <span>{l.title}</span>
                           <span className="text-xs text-muted-foreground">
@@ -157,42 +177,18 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ) : (
           <>
-            {subjectsOf(grade).map((s) => (
-              <NavMain key={s.id} label={`${s.title} ${getGrade(grade).no}`} items={navOf(s.id)} />
-            ))}
-            <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-              <SidebarGroupLabel>Trang tổng hợp</SidebarGroupLabel>
+            <NavMain label="Nội dung" items={content} />
+            <SidebarGroup>
+              <SidebarGroupLabel>Tiện ích &amp; công cụ</SidebarGroupLabel>
               <SidebarMenu>
-                {subjectsOf(grade).map((s) => (
-                  <SidebarMenuItem key={s.id}>
-                    <SidebarMenuButton asChild isActive={here.subject === s.id && !here.topic}>
-                      <Link href={subjectHref(s.id)}>
-                        {SUBJECT_ICON[s.id]}
-                        <span>
-                          {s.title} {getGrade(grade).no}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                <ToolItem tool="periodicTable" href="/bang-tuan-hoan" />
+                <ToolItem tool="calculator" href="/may-tinh" />
               </SidebarMenu>
             </SidebarGroup>
           </>
         )}
       </SidebarContent>
 
-      <SidebarFooter data-own-keys="">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Tất cả các lớp" isActive={path === '/'}>
-              <Link href="/">
-                <HouseIcon />
-                <span>Tất cả các lớp</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

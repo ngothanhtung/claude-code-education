@@ -4,8 +4,7 @@ import type { ReactNode } from 'react';
 import type { Simulation } from '@/hooks/useSimulation';
 import Link from 'next/link';
 import { classHref, subjectHref, topicHref, trailOf, type LessonSlug } from '@/lib/lessons';
-import Calculator from './Calculator';
-import PeriodicTable from './PeriodicTable';
+import ToolToggle from './ToolToggle';
 import LessonNav from './LessonNav';
 import SimCanvas, { type Sketch } from './SimCanvas';
 import { PlaybackControls, Readout, Segmented, type PlayLabels, type ReadoutItem } from './Controls';
@@ -115,11 +114,11 @@ export default function LessonLayout(props: LessonLayoutProps) {
         hình minh họa và bài giải sẽ bắt đầu lại từ đầu.
       </p>
 
-      {/* Công cụ nổi ở góc phải dưới: bảng tuần hoàn (Hóa học), máy tính (Vật lý, Hóa học) */}
+      {/* Nút nhanh ở góc phải dưới: bảng tuần hoàn (Hóa học), máy tính (Vật lý, Hóa học); cửa sổ gắn ở ToolsProvider, mở được từ sidebar ở mọi trang */}
       {(subject.calculator || subject.periodicTable) && (
         <div className="tool-dock">
-          {subject.periodicTable && <PeriodicTable />}
-          {subject.calculator && <Calculator />}
+          {subject.periodicTable && <ToolToggle tool="periodicTable" />}
+          {subject.calculator && <ToolToggle tool="calculator" />}
         </div>
       )}
     </>
