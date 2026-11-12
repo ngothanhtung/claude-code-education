@@ -29,11 +29,7 @@ const DIR_OPTIONS = [
 export default function KhucXaLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 4 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 4, resetOn: ex.params });
 
   const med = MEDIA[q.medium];
   const fromBelow = q.dir === 'ra';
@@ -126,13 +122,13 @@ export default function KhucXaLesson() {
       ]}
       mode={
         <>
-          <Segmented name="medium" legend="Môi trường" options={MEDIUM_OPTIONS} value={q.medium} onChange={(m) => update({ medium: m })} />
-          <Segmented name="dir" legend="Chiều truyền" options={DIR_OPTIONS} value={q.dir} onChange={(d) => update({ dir: d })} />
+          <Segmented name="medium" legend="Môi trường" options={MEDIUM_OPTIONS} value={q.medium} onChange={(m) => ex.edit({ medium: m })} />
+          <Segmented name="dir" legend="Chiều truyền" options={DIR_OPTIONS} value={q.dir} onChange={(d) => ex.edit({ dir: d })} />
         </>
       }
       fields={
         <RangeField id="i" label="Góc tới i" tone="a" min={0} max={89} step={1}
-          value={q.i} display={`${q.i}°`} onChange={(v) => update({ i: v })} />
+          value={q.i} display={`${q.i}°`} onChange={(v) => ex.edit({ i: v })} />
       }
       solution={solution}
       rules={[

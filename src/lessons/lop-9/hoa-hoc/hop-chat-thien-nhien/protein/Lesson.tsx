@@ -4,7 +4,7 @@ import type p5 from 'p5';
 import { StoichSolution, computeStoich, type Given, type Target } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
 import Molecule3D from '@/components/Molecule3D';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, START_LABELS } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -53,17 +53,12 @@ const MODE_OPTIONS = [
   { value: 'nhucau', label: 'Nhu cầu protein' },
 ] as const;
 
-const LABELS: PlayLabels = { start: 'Bắt đầu', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
 const GLY = 'C2H5NO2';
 
 export default function ProteinLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: q.mode === 'phantram' ? 2 : 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: q.mode === 'phantram' ? 2 : 1, defaultDuration: 5, resetOn: ex.params });
   const show = sim.revealed;
   const e2 = (x: number) => eq(isExact(x, 2));
 
@@ -115,7 +110,7 @@ export default function ProteinLesson() {
     ];
     extraMode = (
       <Segmented name="amino" legend="Amino acid" options={(Object.keys(AMINOS) as AminoId[]).map((k) => ({ value: k, label: AMINOS[k].name }))}
-        value={q.amino} onChange={(v) => update({ amino: v })} />
+        value={q.amino} onChange={(v) => ex.edit({ amino: v })} />
     );
   } else if (q.mode === 'thuyphan') {
     const P = PEPTIDES[q.peptide];
@@ -148,11 +143,11 @@ export default function ProteinLesson() {
     ];
     extraMode = (
       <Segmented name="peptide" legend="Peptide" options={(Object.keys(PEPTIDES) as PeptideId[]).map((k) => ({ value: k, label: PEPTIDES[k].name }))}
-        value={q.peptide} onChange={(v) => update({ peptide: v })} />
+        value={q.peptide} onChange={(v) => ex.edit({ peptide: v })} />
     );
     fields = (
       <RangeField id="n" label={`Khối lượng ${P.name}`} tone="a" min={0.01} max={1} step={0.01}
-        value={q.n} display={`${f4(given.value)} g`} onChange={(x) => update({ n: x })} />
+        value={q.n} display={`${f4(given.value)} g`} onChange={(x) => ex.edit({ n: x })} />
     );
   } else {
     const F = FOODS[q.food];
@@ -196,14 +191,14 @@ export default function ProteinLesson() {
     ];
     extraMode = (
       <Segmented name="food" legend="Thực phẩm" options={(Object.keys(FOODS) as FoodId[]).map((k) => ({ value: k, label: FOODS[k].name }))}
-        value={q.food} onChange={(v) => update({ food: v })} />
+        value={q.food} onChange={(v) => ex.edit({ food: v })} />
     );
     fields = (
       <>
         <RangeField id="body" label="Cân nặng" tone="a" min={20} max={80} step={1}
-          value={q.body} display={`${q.body} kg`} onChange={(x) => update({ body: x })} />
+          value={q.body} display={`${q.body} kg`} onChange={(x) => ex.edit({ body: x })} />
         <RangeField id="need" label="Protein cho mỗi kg cơ thể" tone="t" min={0.8} max={2} step={0.1}
-          value={q.need} display={`${fmt(q.need)} g`} onChange={(x) => update({ need: x })} />
+          value={q.need} display={`${fmt(q.need)} g`} onChange={(x) => ex.edit({ need: x })} />
       </>
     );
   }
@@ -224,7 +219,7 @@ export default function ProteinLesson() {
       readout={readout}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
           {extraMode}
         </>
       }
@@ -236,7 +231,7 @@ export default function ProteinLesson() {
         { term: 'Đông tụ', text: 'đun nóng hoặc cho acid vào lòng trắng trứng, protein bị đông tụ' },
         { term: 'Đốt cháy', text: 'protein bị cháy có mùi khét như tóc cháy' },
       ]}
-      playLabels={LABELS}
+      playLabels={START_LABELS}
     />
   );
 }

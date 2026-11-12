@@ -2,12 +2,12 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels, type PlayLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { EXERCISES } from './exercises';
 import { useSimulation } from '@/hooks/useSimulation';
-import { fmt, fmtG } from '@/lib/format';
+import { fmtG } from '@/lib/format';
 import { B, N, U as Un, u } from '@/lib/tex';
 import { drawCoil, drawGenerator, magnetState } from './sketch';
 
@@ -33,8 +33,8 @@ const POLE_OPTIONS = [
 ] as const;
 
 const LABELS: Record<Mode, PlayLabels> = {
-  namcham: { start: 'Di chuyển nam châm', pause: 'Tạm dừng', resume: 'Chạy tiếp', again: 'Làm lại thí nghiệm' },
-  xoaychieu: { start: 'Quay máy phát', pause: 'Tạm dừng', resume: 'Quay tiếp', again: 'Quay lại' },
+  namcham: playLabels('Di chuyển nam châm', 'Chạy tiếp', 'Làm lại thí nghiệm'),
+  xoaychieu: playLabels('Quay máy phát', 'Quay tiếp', 'Quay lại'),
 };
 
 const blank = <span className="blank">?</span>;
@@ -43,11 +43,7 @@ export default function CamUngLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
   const coil = q.mode === 'namcham';
-  const sim = useSimulation({ total: coil ? 3 : 2, defaultDuration: coil ? 7 : 6 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: coil ? 3 : 2, defaultDuration: coil ? 7 : 6, resetOn: ex.params });
 
   const show = sim.revealed;
   const perSecond = 2 * q.n;
@@ -134,20 +130,20 @@ export default function CamUngLesson() {
       }
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          {coil && <Segmented name="pole" legend="Cực đưa vào" options={POLE_OPTIONS} value={q.pole} onChange={(v) => update({ pole: v })} />}
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          {coil && <Segmented name="pole" legend="Cực đưa vào" options={POLE_OPTIONS} value={q.pole} onChange={(v) => ex.edit({ pole: v })} />}
         </>
       }
       fields={
         <>
           <RangeField id="speed" label="Tốc độ di chuyển nam châm" tone="a" min={1} max={5} step={1}
-            value={q.speed} display={['', 'rất chậm', 'chậm', 'vừa', 'nhanh', 'rất nhanh'][q.speed]} onChange={(v) => update({ speed: v })} hidden={!coil} />
+            value={q.speed} display={['', 'rất chậm', 'chậm', 'vừa', 'nhanh', 'rất nhanh'][q.speed]} onChange={(v) => ex.edit({ speed: v })} hidden={!coil} />
           <RangeField id="turns" label="Số vòng dây" tone="t" min={100} max={1000} step={100}
-            value={q.turns} display={`${q.turns} vòng`} onChange={(v) => update({ turns: v })} hidden={!coil} />
+            value={q.turns} display={`${q.turns} vòng`} onChange={(v) => ex.edit({ turns: v })} hidden={!coil} />
           <RangeField id="n" label="Số vòng quay mỗi giây" tone="a" min={1} max={60} step={1}
-            value={q.n} display={`${q.n} vòng`} onChange={(v) => update({ n: v })} hidden={coil} />
+            value={q.n} display={`${q.n} vòng`} onChange={(v) => ex.edit({ n: v })} hidden={coil} />
           <RangeField id="time" label="Thời gian" tone="t" min={1} max={60} step={1}
-            value={q.time} display={`${q.time} giây`} onChange={(v) => update({ time: v })} hidden={coil} />
+            value={q.time} display={`${q.time} giây`} onChange={(v) => ex.edit({ time: v })} hidden={coil} />
         </>
       }
       solution={solution}

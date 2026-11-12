@@ -13,4 +13,8 @@ export const COL = {
   rest: '#E8A23A',
   restText: '#8A4B00',
   mark: '#FFE36E',
+  // nền thanh đo (năng lượng, số mol, %…) và khối chưa bật
+  track: '#EEF1F7',
+  // --ink-line: nét kẻ nhạt, mũi tên chưa chạy tới
+  inkLine: '#C9D3EA',
 } as const;

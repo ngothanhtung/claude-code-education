@@ -168,8 +168,22 @@ export interface PlayLabels {
   again: string;
 }
 
-export const DRIVE_LABELS: PlayLabels = { start: 'Cho xe chạy', pause: 'Tạm dừng', resume: 'Chạy tiếp', again: 'Chạy lại' };
-export const LIGHT_LABELS: PlayLabels = { start: 'Chiếu tia sáng', pause: 'Tạm dừng', resume: 'Chiếu tiếp', again: 'Chiếu lại' };
+/** Nhãn nút phát: chỉ cần động từ của bài ("Nâng vật", "Nâng tiếp", "Nâng lại"); "Tạm dừng" dùng chung */
+export const playLabels = (start: string, resume = 'Tiếp tục', again = 'Làm lại'): PlayLabels => ({
+  start,
+  pause: 'Tạm dừng',
+  resume,
+  again,
+});
+
+/** Toán 5 – Chuyển động */
+export const DRIVE_LABELS = playLabels('Cho xe chạy', 'Chạy tiếp', 'Chạy lại');
+/** Vật lý 9 – Quang học */
+export const LIGHT_LABELS = playLabels('Chiếu tia sáng', 'Chiếu tiếp', 'Chiếu lại');
+/** Hóa học 9 – bài có phương trình phản ứng */
+export const REACT_LABELS = playLabels('Cho phản ứng');
+/** Nút phát chung khi bài không có động từ riêng */
+export const START_LABELS = playLabels('Bắt đầu');
 
 export function PlaybackControls({ sim, labels = DRIVE_LABELS }: { sim: Simulation; labels?: PlayLabels }) {
   let label = labels.start;

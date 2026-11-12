@@ -1,9 +1,10 @@
 import type p5 from 'p5';
 import { COL } from '@/lib/draw/colors';
+import { energyBars, type EnergyBar } from '@/lib/draw/energy';
 import { caption, clamp01, ease } from '@/lib/draw/geometry';
 import { dashedLine, drawPaper, labelBox } from '@/lib/draw/scene';
 import { contactShadow, shadedSphere } from '@/lib/draw/fx';
-import { fmt, fmtG } from '@/lib/format';
+import { fmt } from '@/lib/format';
 
 export interface PotentialScene {
   shape: 'box' | 'ball';
@@ -112,35 +113,19 @@ export function drawPotential(p: p5, s: PotentialScene) {
 
 function drawBars(p: p5, s: PotentialScene, Wt: number, Wt2: number, Wmax: number) {
   const twoRefs = s.hb > 0;
-  const base = twoRefs ? 360 : 410;
-  const maxH = twoRefs ? 210 : 260;
-  const bars: [string, number, string, string][] = [[`Wt (mốc ${s.groundName})`, Wt, COL.b, s.WText]];
-  if (twoRefs) bars.push(['Wt (mốc mặt bàn)', Wt2, COL.a, s.W2Text]);
-  p.noStroke();
-  p.fill(COL.text);
-  p.textAlign(p.CENTER, p.CENTER);
-  p.textSize(15);
-  p.textStyle(p.BOLD);
-  p.text('Thế năng (J)', 650, 92);
-  const cx0 = twoRefs ? 590 : 650;
-  bars.forEach(([name, val, col, finalText], i) => {
-    const x = cx0 + i * 120 - 30;
-    const h = Wmax > 0 ? (maxH * val) / Wmax : 0;
-    p.noStroke();
-    p.fill('#EEF1F7');
-    p.rect(x, base - maxH, 60, maxH, 4);
-    p.fill(col);
-    if (h >= 0) p.rect(x, base - h, 60, h, 4);
-    else p.rect(x, base, 60, -h, 4);
-    p.fill(COL.text);
-    p.textSize(12);
-    p.textStyle(p.BOLD);
-    p.text(name, x + 30, twoRefs ? 440 : base + 20);
-    const label = s.done ? finalText : fmtG(val, 1);
-    labelBox(p, x + 30, h >= 0 ? base - h - 14 : base - h + 14, label, col === COL.b ? COL.bText : COL.aText, 13);
+  const bars: EnergyBar[] = [{ name: `Wt (mốc ${s.groundName})`, value: Wt, col: COL.b, textCol: COL.bText, label: s.done ? s.WText : undefined }];
+  if (twoRefs) bars.push({ name: 'Wt (mốc mặt bàn)', value: Wt2, col: COL.a, textCol: COL.aText, label: s.done ? s.W2Text : undefined });
+  energyBars(p, {
+    title: 'Thế năng (J)',
+    titleY: 92,
+    bars,
+    cx: twoRefs ? 590 : 650,
+    step: 120,
+    width: 60,
+    base: twoRefs ? 360 : 410,
+    maxH: twoRefs ? 210 : 260,
+    max: Wmax,
+    nameSize: 12,
+    nameY: twoRefs ? 440 : 430,
   });
-  p.stroke(COL.muted);
-  p.strokeWeight(1.5);
-  p.line(cx0 - 50, base, cx0 + (twoRefs ? 170 : 50), base);
-  p.textStyle(p.NORMAL);
 }

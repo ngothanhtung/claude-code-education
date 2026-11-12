@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { EXERCISES } from './exercises';
@@ -39,16 +39,12 @@ const MODE_OPTIONS = [
 
 const MAT_OPTIONS = (Object.keys(MATERIALS) as MaterialId[]).map((k) => ({ value: k, label: MATERIALS[k].name }));
 
-const LABELS: PlayLabels = { start: 'Đóng khóa K', pause: 'Tạm dừng', resume: 'Chạy tiếp', again: 'Đóng lại' };
+const LABELS = playLabels('Đóng khóa K', 'Chạy tiếp', 'Đóng lại');
 
 export default function DinhLuatOmLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 4 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 4, resetOn: ex.params });
 
   const m = MATERIALS[q.mat];
   const rho = m.mant * 10 ** m.exp;
@@ -146,24 +142,24 @@ export default function DinhLuatOmLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
           {q.mode === 'rho' && (
-            <Segmented name="mat" legend="Vật liệu" options={MAT_OPTIONS} value={q.mat} onChange={(v) => update({ mat: v })} />
+            <Segmented name="mat" legend="Vật liệu" options={MAT_OPTIONS} value={q.mat} onChange={(v) => ex.edit({ mat: v })} />
           )}
         </>
       }
       fields={
         <>
           <RangeField id="U" label="Hiệu điện thế U" tone="t" min={1} max={24} step={1}
-            value={q.U} display={`${fmt(q.U)} V`} onChange={(v) => update({ U: v })} />
+            value={q.U} display={`${fmt(q.U)} V`} onChange={(v) => ex.edit({ U: v })} />
           <RangeField id="R" label="Điện trở R" tone="a" min={2} max={60} step={1}
-            value={q.R} display={`${fmt(q.R)} Ω`} onChange={(v) => update({ R: v })} hidden={q.mode !== 'I'} />
+            value={q.R} display={`${fmt(q.R)} Ω`} onChange={(v) => ex.edit({ R: v })} hidden={q.mode !== 'I'} />
           <RangeField id="I" label="Cường độ dòng điện I" tone="b" min={0.1} max={3} step={0.1}
-            value={q.I} display={`${fmt(q.I)} A`} onChange={(v) => update({ I: v })} hidden={q.mode !== 'R'} />
+            value={q.I} display={`${fmt(q.I)} A`} onChange={(v) => ex.edit({ I: v })} hidden={q.mode !== 'R'} />
           <RangeField id="l" label="Chiều dài dây l" tone="t" min={1} max={50} step={1}
-            value={q.l} display={`${fmt(q.l)} m`} onChange={(v) => update({ l: v })} hidden={q.mode !== 'rho'} />
+            value={q.l} display={`${fmt(q.l)} m`} onChange={(v) => ex.edit({ l: v })} hidden={q.mode !== 'rho'} />
           <RangeField id="S" label="Tiết diện dây S" tone="t" min={0.1} max={2} step={0.1}
-            value={q.S} display={`${fmt(q.S)} mm²`} onChange={(v) => update({ S: v })} hidden={q.mode !== 'rho'} />
+            value={q.S} display={`${fmt(q.S)} mm²`} onChange={(v) => ex.edit({ S: v })} hidden={q.mode !== 'rho'} />
         </>
       }
       solution={solution}

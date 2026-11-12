@@ -112,7 +112,7 @@ function drawMeter(p: p5, s: PowerScene) {
   const gy = 440;
   const gw = 560;
   p.noStroke();
-  p.fill('#E6EAF2');
+  p.fill(COL.track);
   p.rect(gx, gy, gw, 14, 7);
   p.fill(COL.ink);
   p.rect(gx, gy, (gw * day) / s.days, 14, 7);

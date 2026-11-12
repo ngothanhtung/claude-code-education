@@ -1,10 +1,10 @@
 'use client';
 
 import type p5 from 'p5';
-import { StoichSolution, computeStoich, type Given, type Target } from '@/components/ChemSteps';
+import { StoichSolution, computeStoich, stoichReadout, type Given, type Target } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
 import Molecule3D from '@/components/Molecule3D';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, REACT_LABELS } from '@/components/Controls';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
 import { coefOf, cu, eqUni, f4, molarMass, type Reaction } from '@/lib/chem';
@@ -76,16 +76,11 @@ const SETUPS: Record<Mode, Setup> = {
 };
 
 const NAMES: Record<string, string> = { [GLU]: 'glucose', [SAC]: 'saccharose' };
-const LABELS: PlayLabels = { start: 'Cho phản ứng', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
 
 export default function GlucoseSaccharoseLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 5, resetOn: ex.params });
   const show = sim.revealed;
 
   const S = SETUPS[q.mode];
@@ -144,21 +139,14 @@ export default function GlucoseSaccharoseLesson() {
       problem={problem}
       draw={draw}
       canvasLabel="Phương trình hóa học bằng mô hình; các thanh dưới là số mol từng chất."
-      readout={[
-        { label: `Số mol ${NAMES[S.given]}`, value: `${f4(st.nGiven)} mol`, tone: 'time' },
-        ...st.items.slice(0, 2).map((it, i) => ({
-          label: `${it.kind === 'V' ? 'Thể tích' : 'Khối lượng'} ${it.f === GLU ? 'glucose' : cu(it.f)}`,
-          value: show ? `${f4(it.value)} ${it.kind === 'V' ? 'L' : 'g'}` : `? ${it.kind === 'V' ? 'L' : 'g'}`,
-          tone: (i === 0 ? 'a' : 'b') as 'a' | 'b',
-        })),
-      ]}
-      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />}
+      readout={stoichReadout(st, show, NAMES[S.given], (f) => (f === GLU ? 'glucose' : cu(f)))}
+      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />}
       fields={
         <>
           <RangeField id="n" label={`Khối lượng ${NAMES[S.given]}`} tone="a" min={0.05} max={3} step={0.05}
-            value={q.n} display={`${g} g`} onChange={(x) => update({ n: x })} />
+            value={q.n} display={`${g} g`} onChange={(x) => ex.edit({ n: x })} />
           <RangeField id="H" label="Hiệu suất" tone="b" min={50} max={100} step={5}
-            value={q.H} display={`${q.H}%`} onChange={(x) => update({ H: x })} hidden={q.mode === 'quanghop'} />
+            value={q.H} display={`${q.H}%`} onChange={(x) => ex.edit({ H: x })} hidden={q.mode === 'quanghop'} />
         </>
       }
       solution={<StoichSolution r={S.r} cond={S.cond} equation={S.equation} given={given} targets={S.targets} H={H} show={show} names={NAMES} />}
@@ -168,7 +156,7 @@ export default function GlucoseSaccharoseLesson() {
         { term: 'Tráng bạc', text: '$\\mathrm{C_6H_{12}O_6} + \\mathrm{Ag_2O} \\xrightarrow{\\mathrm{NH_3}} \\mathrm{C_6H_{12}O_7} + 2\\mathrm{Ag}$' },
         { term: 'Thủy phân saccharose', text: 'tạo glucose và fructose (cùng công thức $\\mathrm{C_6H_{12}O_6}$)' },
       ]}
-      playLabels={LABELS}
+      playLabels={REACT_LABELS}
     />
   );
 }

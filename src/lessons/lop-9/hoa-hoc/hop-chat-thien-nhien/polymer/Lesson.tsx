@@ -3,7 +3,7 @@
 import type p5 from 'p5';
 import { MassSolution, computeMass, type MassSpecies } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -50,16 +50,12 @@ const MODE_OPTIONS = [
 const POLY_OPTIONS = (Object.keys(POLYS) as PolyId[]).map((k) => ({ value: k, label: k }));
 
 const EL_NAME: Record<string, string> = { C: 'carbon', Cl: 'chlorine' };
-const LABELS: PlayLabels = { start: 'Trùng hợp', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
+const LABELS = playLabels('Trùng hợp');
 
 export default function PolymerLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 5, resetOn: ex.params });
   const show = sim.revealed;
   const P = POLYS[q.poly];
   const Mu = molarMass(P.formula);
@@ -165,18 +161,18 @@ export default function PolymerLesson() {
       readout={readout}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          <Segmented name="poly" legend="Polymer" options={POLY_OPTIONS} value={q.poly} onChange={(v) => update({ poly: v })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          <Segmented name="poly" legend="Polymer" options={POLY_OPTIONS} value={q.poly} onChange={(v) => ex.edit({ poly: v })} />
         </>
       }
       fields={
         <>
           <RangeField id="deg" label="Hệ số polymer hóa" tone="a" min={100} max={5000} step={100}
-            value={q.deg} display={`M = ${fmtG(q.deg * Mu)} g/mol`} onChange={(x) => update({ deg: x })} hidden={q.mode !== 'heso'} />
+            value={q.deg} display={`M = ${fmtG(q.deg * Mu)} g/mol`} onChange={(x) => ex.edit({ deg: x })} hidden={q.mode !== 'heso'} />
           <RangeField id="mRaw" label="Khối lượng monomer" tone="a" min={0.1} max={20} step={0.1}
-            value={q.mRaw} display={`${fmt(q.mRaw)} tấn`} onChange={(x) => update({ mRaw: x })} hidden={q.mode !== 'trunghop'} />
+            value={q.mRaw} display={`${fmt(q.mRaw)} tấn`} onChange={(x) => ex.edit({ mRaw: x })} hidden={q.mode !== 'trunghop'} />
           <RangeField id="H" label="Hiệu suất" tone="b" min={50} max={100} step={5}
-            value={q.H} display={`${q.H}%`} onChange={(x) => update({ H: x })} hidden={q.mode !== 'trunghop'} />
+            value={q.H} display={`${q.H}%`} onChange={(x) => ex.edit({ H: x })} hidden={q.mode !== 'trunghop'} />
         </>
       }
       solution={solution}

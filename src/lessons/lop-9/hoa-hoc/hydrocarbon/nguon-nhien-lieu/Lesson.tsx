@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -40,17 +40,13 @@ const MODE_OPTIONS = [
 ] as const;
 const FUEL_OPTIONS = (Object.keys(FUELS) as FuelId[]).map((k) => ({ value: k, label: k === 'C' ? 'Than (C)' : cu(k) }));
 
-const LABELS: PlayLabels = { start: 'Đốt nhiên liệu', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Đốt lại' };
+const LABELS = playLabels('Đốt nhiên liệu', 'Tiếp tục', 'Đốt lại');
 const C_WATER = 4.2; // kJ/(kg.°C)
 
 export default function NguonNhienLieuLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 6 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 6, resetOn: ex.params });
 
   const show = sim.revealed;
   const F = FUELS[q.fuel];
@@ -172,20 +168,20 @@ export default function NguonNhienLieuLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          <Segmented name="fuel" legend="Nhiên liệu" options={FUEL_OPTIONS} value={q.fuel} onChange={(v) => update({ fuel: v })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          <Segmented name="fuel" legend="Nhiên liệu" options={FUEL_OPTIONS} value={q.fuel} onChange={(v) => ex.edit({ fuel: v })} />
         </>
       }
       fields={
         <>
           <RangeField id="m" label="Khối lượng nhiên liệu" tone="a" min={1} max={2000} step={1}
-            value={q.m} display={`${fmtG(q.m)} g`} onChange={(x) => update({ m: x })} hidden={q.mode === 'dunnuoc'} />
+            value={q.m} display={`${fmtG(q.m)} g`} onChange={(x) => ex.edit({ m: x })} hidden={q.mode === 'dunnuoc'} />
           <RangeField id="water" label="Khối lượng nước" tone="b" min={0.5} max={10} step={0.5}
-            value={q.water} display={`${fmt(q.water)} kg`} onChange={(x) => update({ water: x })} hidden={q.mode !== 'dunnuoc'} />
+            value={q.water} display={`${fmt(q.water)} kg`} onChange={(x) => ex.edit({ water: x })} hidden={q.mode !== 'dunnuoc'} />
           <RangeField id="t1" label="Nhiệt độ ban đầu" tone="t" min={10} max={40} step={1}
-            value={q.t1} display={`${q.t1} °C`} onChange={(x) => update({ t1: x })} hidden={q.mode !== 'dunnuoc'} />
+            value={q.t1} display={`${q.t1} °C`} onChange={(x) => ex.edit({ t1: x })} hidden={q.mode !== 'dunnuoc'} />
           <RangeField id="H" label="Hiệu suất sử dụng nhiệt" tone="a" min={30} max={100} step={5}
-            value={q.H} display={`${q.H}%`} onChange={(x) => update({ H: x })} hidden={q.mode !== 'dunnuoc'} />
+            value={q.H} display={`${q.H}%`} onChange={(x) => ex.edit({ H: x })} hidden={q.mode !== 'dunnuoc'} />
         </>
       }
       solution={solution}

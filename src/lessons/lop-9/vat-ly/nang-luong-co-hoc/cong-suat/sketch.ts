@@ -102,7 +102,7 @@ function drawCrane(p: p5, c: Crane, x: number, s: CraneScene) {
   p.text(c.name, x, GROUND + 30);
   const work = 10 * c.m * lifted;
   const barW = 200;
-  p.fill('#EEF1F7');
+  p.fill(COL.track);
   p.rect(x - barW / 2, GROUND + 48, barW, 14, 7);
   p.fill(c.col);
   p.rect(x - barW / 2, GROUND + 48, (barW * work) / s.workMax, 14, 7);

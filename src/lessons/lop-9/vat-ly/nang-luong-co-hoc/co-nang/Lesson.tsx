@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { EXERCISES } from './exercises';
@@ -23,7 +23,7 @@ export interface Params {
   hM: number; // m
 }
 
-const LABELS: PlayLabels = { start: 'Thả vật', pause: 'Tạm dừng', resume: 'Rơi tiếp', again: 'Thả lại' };
+const LABELS = playLabels('Thả vật', 'Rơi tiếp', 'Thả lại');
 const g = 10;
 
 /** Điểm M luôn thấp hơn chỗ thả vật */
@@ -36,11 +36,7 @@ export default function CoNangLesson() {
   const { m, h0, hM } = ex.params;
 
   const T = Math.sqrt((2 * h0) / g); // thời gian rơi (giây)
-  const sim = useSimulation({ total: T, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: T, defaultDuration: 5, resetOn: ex.params });
 
   const tau = sim.t;
   const h = Math.max(0, h0 - (g * tau * tau) / 2);
@@ -118,11 +114,11 @@ export default function CoNangLesson() {
       fields={
         <>
           <RangeField id="sM" label="Khối lượng" tone="a" min={0.5} max={10} step={0.5}
-            value={m} display={`${fmt(m)} kg`} onChange={(x) => update({ m: x })} />
+            value={m} display={`${fmt(m)} kg`} onChange={(x) => ex.edit({ m: x })} />
           <RangeField id="sH" label="Độ cao thả vật" tone="t" min={1} max={20} step={1}
-            value={h0} display={`${fmt(h0)} m`} onChange={(x) => update({ h0: x })} />
+            value={h0} display={`${fmt(h0)} m`} onChange={(x) => ex.edit({ h0: x })} />
           <RangeField id="sHM" label="Độ cao điểm M" tone="t" min={0} max={19.5} step={0.5}
-            value={hM} display={`${fmt(hM)} m`} onChange={(x) => update({ hM: x })} />
+            value={hM} display={`${fmt(hM)} m`} onChange={(x) => ex.edit({ hM: x })} />
         </>
       }
       solution={solution}

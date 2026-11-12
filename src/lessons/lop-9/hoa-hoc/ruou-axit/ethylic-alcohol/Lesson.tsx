@@ -1,10 +1,10 @@
 'use client';
 
 import type p5 from 'p5';
-import { StoichSolution, computeStoich, type Given, type Target } from '@/components/ChemSteps';
+import { StoichSolution, computeStoich, stoichReadout, type Given, type Target } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
 import Molecule3D from '@/components/Molecule3D';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, REACT_LABELS } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -49,17 +49,12 @@ const REACTIONS: Record<'dot' | 'na' | 'lenmen', { r: Reaction; cond?: string; u
 };
 
 const NAMES: Record<string, string> = { C2H5OH: 'ethylic alcohol', C6H12O6: 'glucose' };
-const LABELS: PlayLabels = { start: 'Cho phản ứng', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
 const D = 0.8; // g/mL
 
 export default function EthylicAlcoholLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 5, resetOn: ex.params });
   const show = sim.revealed;
 
   let problem;
@@ -133,14 +128,7 @@ export default function EthylicAlcoholLesson() {
         started: sim.started,
         done: sim.done,
       });
-    readout = [
-      { label: `Số mol ${cu(R.given)}`, value: `${f4(st.nGiven)} mol`, tone: 'time' as const },
-      ...st.items.slice(0, 2).map((it, i) => ({
-        label: `${it.kind === 'V' ? 'Thể tích' : 'Khối lượng'} ${cu(it.f)}`,
-        value: show ? `${f4(it.value)} ${it.kind === 'V' ? 'L' : 'g'}` : `? ${it.kind === 'V' ? 'L' : 'g'}`,
-        tone: (i === 0 ? 'a' : 'b') as 'a' | 'b',
-      })),
-    ];
+    readout = stoichReadout(st, show, cu(R.given));
   }
 
   const M = q.mode === 'lenmen' ? 180 : 46;
@@ -158,17 +146,17 @@ export default function EthylicAlcoholLesson() {
           : 'Phương trình hóa học bằng mô hình phân tử; các thanh dưới là số mol từng chất.'
       }
       readout={readout}
-      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />}
+      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />}
       fields={
         <>
           <RangeField id="n" label={q.mode === 'lenmen' ? 'Khối lượng glucose' : 'Khối lượng ethylic alcohol'} tone="a" min={0.05} max={5} step={0.05}
-            value={q.n} display={`${f4(q.n * M)} g`} onChange={(x) => update({ n: x })} hidden={q.mode === 'docon'} />
+            value={q.n} display={`${f4(q.n * M)} g`} onChange={(x) => ex.edit({ n: x })} hidden={q.mode === 'docon'} />
           <RangeField id="Vdd" label="Thể tích dung dịch rượu" tone="a" min={10} max={1000} step={10}
-            value={q.Vdd} display={`${q.Vdd} mL`} onChange={(x) => update({ Vdd: x })} hidden={q.mode !== 'docon'} />
+            value={q.Vdd} display={`${q.Vdd} mL`} onChange={(x) => ex.edit({ Vdd: x })} hidden={q.mode !== 'docon'} />
           <RangeField id="deg" label="Độ cồn" tone="t" min={1} max={60} step={1}
-            value={q.deg} display={`${q.deg}°`} onChange={(x) => update({ deg: x })} hidden={q.mode !== 'docon'} />
+            value={q.deg} display={`${q.deg}°`} onChange={(x) => ex.edit({ deg: x })} hidden={q.mode !== 'docon'} />
           <RangeField id="H" label="Hiệu suất lên men" tone="b" min={50} max={100} step={5}
-            value={q.H} display={`${q.H}%`} onChange={(x) => update({ H: x })} hidden={q.mode !== 'lenmen'} />
+            value={q.H} display={`${q.H}%`} onChange={(x) => ex.edit({ H: x })} hidden={q.mode !== 'lenmen'} />
         </>
       }
       solution={solution}
@@ -178,7 +166,7 @@ export default function EthylicAlcoholLesson() {
         { term: 'Độ cồn', text: 'số mL ethylic alcohol nguyên chất trong 100 mL dung dịch' },
         { term: 'Điều chế', text: '$\\mathrm{C_6H_{12}O_6} \\xrightarrow{\\text{men rượu}} 2\\mathrm{C_2H_5OH} + 2\\mathrm{CO_2}$' },
       ]}
-      playLabels={LABELS}
+      playLabels={REACT_LABELS}
     />
   );
 }

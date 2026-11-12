@@ -3,7 +3,7 @@
 import type p5 from 'p5';
 import { MassSolution, computeMass, type MassSpecies } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, START_LABELS } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -38,16 +38,11 @@ const C: MassSpecies = { f: 'C', k: 1 };
 const CO2_1: MassSpecies = { f: 'CO2', k: 1 };
 const D = 0.7; // kg/L
 
-const LABELS: PlayLabels = { start: 'Bắt đầu', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
 
 export default function NhienLieuHoaThachLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 5, resetOn: ex.params });
   const show = sim.revealed;
 
   let problem;
@@ -158,21 +153,21 @@ export default function NhienLieuHoaThachLesson() {
       draw={draw}
       canvasLabel="Chu trình carbon: đốt nhiên liệu thải CO₂ vào khí quyển, cây xanh và đại dương hấp thụ lại; nhiệt kế cho biết Trái Đất ấm lên."
       readout={readout}
-      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />}
+      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />}
       fields={
         <>
           <RangeField id="km" label="Quãng đường" tone="a" min={10} max={3000} step={10}
-            value={q.km} display={`${fmtG(q.km)} km`} onChange={(v) => update({ km: v })} hidden={q.mode !== 'xang'} />
+            value={q.km} display={`${fmtG(q.km)} km`} onChange={(v) => ex.edit({ km: v })} hidden={q.mode !== 'xang'} />
           <RangeField id="cons" label="Xăng cho 100 km" tone="t" min={1} max={10} step={0.5}
-            value={q.cons} display={`${fmt(q.cons)} L`} onChange={(v) => update({ cons: v })} hidden={q.mode !== 'xang'} />
+            value={q.cons} display={`${fmt(q.cons)} L`} onChange={(v) => ex.edit({ cons: v })} hidden={q.mode !== 'xang'} />
           <RangeField id="coal" label="Khối lượng than" tone="a" min={0.5} max={200} step={0.5}
-            value={q.coal} display={`${fmt(q.coal)} tấn`} onChange={(v) => update({ coal: v })} hidden={q.mode !== 'than'} />
+            value={q.coal} display={`${fmt(q.coal)} tấn`} onChange={(v) => ex.edit({ coal: v })} hidden={q.mode !== 'than'} />
           <RangeField id="pctC" label="Hàm lượng carbon" tone="t" min={50} max={95} step={1}
-            value={q.pctC} display={`${q.pctC}%`} onChange={(v) => update({ pctC: v })} hidden={q.mode !== 'than'} />
+            value={q.pctC} display={`${q.pctC}%`} onChange={(v) => ex.edit({ pctC: v })} hidden={q.mode !== 'than'} />
           <RangeField id="co2" label="CO₂ thải ra mỗi năm" tone="a" min={100} max={5000} step={50}
-            value={q.co2} display={`${fmtG(q.co2)} kg`} onChange={(v) => update({ co2: v })} hidden={q.mode !== 'cay'} />
+            value={q.co2} display={`${fmtG(q.co2)} kg`} onChange={(v) => ex.edit({ co2: v })} hidden={q.mode !== 'cay'} />
           <RangeField id="absorb" label="CO₂ một cây hấp thụ mỗi năm" tone="t" min={10} max={50} step={1}
-            value={q.absorb} display={`${q.absorb} kg`} onChange={(v) => update({ absorb: v })} hidden={q.mode !== 'cay'} />
+            value={q.absorb} display={`${q.absorb} kg`} onChange={(v) => ex.edit({ absorb: v })} hidden={q.mode !== 'cay'} />
         </>
       }
       solution={solution}
@@ -182,7 +177,7 @@ export default function NhienLieuHoaThachLesson() {
         { term: 'Ấm lên toàn cầu', text: 'khí nhà kính ($\\mathrm{CO_2}$, $\\mathrm{CH_4}$…) tăng giữ nhiệt, Trái Đất nóng lên' },
         { term: 'Giảm phát thải', text: 'tiết kiệm năng lượng, dùng năng lượng tái tạo, trồng rừng' },
       ]}
-      playLabels={LABELS}
+      playLabels={START_LABELS}
     />
   );
 }

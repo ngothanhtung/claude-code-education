@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step } from '@/components/Notebook';
 import { B, N, UN } from '@/lib/tex';
+import { useParams } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
 import { fmt } from '@/lib/format';
 import { drawShapes } from './sketch';
@@ -29,24 +29,18 @@ const PRESETS: Record<Mode, Omit<Params, 'mode'>> = {
   hinhthang: { a: 10, b: 6, h: 5 },
 };
 
-const CUT_LABELS: PlayLabels = { start: 'Cắt ghép hình', pause: 'Tạm dừng', resume: 'Ghép tiếp', again: 'Xem lại' };
+/** Đáy bé luôn nhỏ hơn đáy lớn */
+const fix = (q: Params): Params => (q.b >= q.a ? { ...q, b: Math.max(1, q.a - 1) } : q);
+
+const CUT_LABELS = playLabels('Cắt ghép hình', 'Ghép tiếp', 'Xem lại');
 
 export default function DienTichLesson() {
-  const [params, setParams] = useState<Params>({ mode: 'tamgiac', ...PRESETS.tamgiac });
+  const { params, edit } = useParams<Params>({ mode: 'tamgiac', ...PRESETS.tamgiac }, fix);
   const { mode, a, b, h } = params;
   const trap = mode === 'hinhthang';
   const area = trap ? ((a + b) * h) / 2 : (a * h) / 2;
 
-  const sim = useSimulation({ total: 3, defaultDuration: 7 });
-  const update = (patch: Partial<Params>) => {
-    setParams((prev) => {
-      const next = { ...prev, ...patch };
-      // đáy bé luôn nhỏ hơn đáy lớn
-      if (next.b >= next.a) next.b = Math.max(1, next.a - 1);
-      return next;
-    });
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 3, defaultDuration: 7, resetOn: params });
 
   const show = sim.revealed;
   const draw = (p: p5) => drawShapes(p, { mode, a, b, h, area, t: sim.t, done: sim.done });
@@ -96,16 +90,16 @@ export default function DienTichLesson() {
       ]}
       mode={
         <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={mode}
-          onChange={(m) => update({ mode: m, ...PRESETS[m] })} />
+          onChange={(m) => edit({ mode: m, ...PRESETS[m] })} />
       }
       fields={
         <>
           <RangeField id="sA" label={trap ? 'Đáy lớn' : 'Độ dài đáy'} tone="a" min={2} max={16} step={0.5}
-            value={a} display={`${fmt(a)} cm`} onChange={(v) => update({ a: v })} />
+            value={a} display={`${fmt(a)} cm`} onChange={(v) => edit({ a: v })} />
           <RangeField id="sB" label="Đáy bé" tone="a" min={1} max={15} step={0.5}
-            value={b} display={`${fmt(b)} cm`} onChange={(v) => update({ b: Math.min(v, a - 0.5) })} hidden={!trap} />
+            value={b} display={`${fmt(b)} cm`} onChange={(v) => edit({ b: Math.min(v, a - 0.5) })} hidden={!trap} />
           <RangeField id="sH" label="Chiều cao" tone="t" min={2} max={10} step={0.5}
-            value={h} display={`${fmt(h)} cm`} onChange={(v) => update({ h: v })} />
+            value={h} display={`${fmt(h)} cm`} onChange={(v) => edit({ h: v })} />
         </>
       }
       solution={solution}

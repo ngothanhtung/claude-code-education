@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -37,16 +37,12 @@ const MODE_OPTIONS = [
 ] as const;
 const MIN_OPTIONS = (Object.keys(MINERALS) as MineralId[]).map((k) => ({ value: k, label: `${MINERALS[k].name.split(' ')[0]} (${cu(MINERALS[k].f)})` }));
 
-const LABELS: PlayLabels = { start: 'Phân tích', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
+const LABELS = playLabels('Phân tích');
 
 export default function VoTraiDatLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 4 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 4, resetOn: ex.params });
   const show = sim.revealed;
 
   const Mi = MINERALS[q.mineral];
@@ -124,16 +120,16 @@ export default function VoTraiDatLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          <Segmented name="mineral" legend="Khoáng vật" options={MIN_OPTIONS} value={q.mineral} onChange={(v) => update({ mineral: v })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          <Segmented name="mineral" legend="Khoáng vật" options={MIN_OPTIONS} value={q.mineral} onChange={(v) => ex.edit({ mineral: v })} />
         </>
       }
       fields={
         <>
           <RangeField id="mRaw" label="Khối lượng quặng" tone="a" min={0.5} max={100} step={0.5}
-            value={q.mRaw} display={`${fmt(q.mRaw)} tấn`} onChange={(v) => update({ mRaw: v })} hidden={q.mode !== 'quang'} />
+            value={q.mRaw} display={`${fmt(q.mRaw)} tấn`} onChange={(v) => ex.edit({ mRaw: v })} hidden={q.mode !== 'quang'} />
           <RangeField id="pct" label="Hàm lượng khoáng vật" tone="t" min={10} max={100} step={1}
-            value={q.pct} display={`${q.pct}%`} onChange={(v) => update({ pct: v })} hidden={q.mode !== 'quang'} />
+            value={q.pct} display={`${q.pct}%`} onChange={(v) => ex.edit({ pct: v })} hidden={q.mode !== 'quang'} />
         </>
       }
       solution={solution}

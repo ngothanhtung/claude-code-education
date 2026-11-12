@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { B, N, U, eq as teq, u } from '@/lib/tex';
 import { useExercises } from '@/hooks/useExercises';
@@ -17,24 +17,19 @@ export interface Params {
   m2: number; h2: number; t2: number;
 }
 
-const LABELS: PlayLabels = { start: 'Nâng hàng', pause: 'Tạm dừng', resume: 'Nâng tiếp', again: 'Nâng lại' };
+const LABELS = playLabels('Nâng hàng', 'Nâng tiếp', 'Nâng lại');
 
 export default function CongSuatLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
   const total = Math.max(q.t1, q.t2);
-  const sim = useSimulation({ total, defaultDuration: 8 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total, defaultDuration: 8, resetOn: ex.params });
 
   const A1 = 10 * q.m1 * q.h1;
   const A2 = 10 * q.m2 * q.h2;
   const P1 = A1 / q.t1;
   const P2 = A2 / q.t2;
   const show = sim.revealed;
-  const eq = (x: number) => (isExact(x) ? '=' : '≈');
   const verdict =
     Math.abs(P1 - P2) < 1e-9
       ? 'Hai cần cẩu có công suất bằng nhau'
@@ -120,17 +115,17 @@ export default function CongSuatLesson() {
       fields={
         <>
           <RangeField id="m1" label="Khối lượng hàng A" tone="a" min={100} max={2000} step={100}
-            value={q.m1} display={`${fmtG(q.m1, 0)} kg`} onChange={(v) => update({ m1: v })} />
+            value={q.m1} display={`${fmtG(q.m1, 0)} kg`} onChange={(v) => ex.edit({ m1: v })} />
           <RangeField id="m2" label="Khối lượng hàng B" tone="b" min={100} max={2000} step={100}
-            value={q.m2} display={`${fmtG(q.m2, 0)} kg`} onChange={(v) => update({ m2: v })} />
+            value={q.m2} display={`${fmtG(q.m2, 0)} kg`} onChange={(v) => ex.edit({ m2: v })} />
           <RangeField id="h1" label="Độ cao nâng A" tone="a" min={1} max={20} step={1}
-            value={q.h1} display={`${q.h1} m`} onChange={(v) => update({ h1: v })} />
+            value={q.h1} display={`${q.h1} m`} onChange={(v) => ex.edit({ h1: v })} />
           <RangeField id="h2" label="Độ cao nâng B" tone="b" min={1} max={20} step={1}
-            value={q.h2} display={`${q.h2} m`} onChange={(v) => update({ h2: v })} />
+            value={q.h2} display={`${q.h2} m`} onChange={(v) => ex.edit({ h2: v })} />
           <RangeField id="t1" label="Thời gian nâng A" tone="a" min={5} max={60} step={5}
-            value={q.t1} display={`${q.t1} s`} onChange={(v) => update({ t1: v })} />
+            value={q.t1} display={`${q.t1} s`} onChange={(v) => ex.edit({ t1: v })} />
           <RangeField id="t2" label="Thời gian nâng B" tone="b" min={5} max={60} step={5}
-            value={q.t2} display={`${q.t2} s`} onChange={(v) => update({ t2: v })} />
+            value={q.t2} display={`${q.t2} s`} onChange={(v) => ex.edit({ t2: v })} />
         </>
       }
       solution={solution}

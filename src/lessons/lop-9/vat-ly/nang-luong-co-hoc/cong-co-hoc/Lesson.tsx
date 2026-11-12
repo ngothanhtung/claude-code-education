@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { EXERCISES } from './exercises';
@@ -33,7 +33,7 @@ export interface Params {
   A: number; // J (đề cho khi tính lực)
 }
 
-const LABELS: PlayLabels = { start: 'Tác dụng lực', pause: 'Tạm dừng', resume: 'Chạy tiếp', again: 'Thực hiện lại' };
+const LABELS = playLabels('Tác dụng lực', 'Chạy tiếp', 'Thực hiện lại');
 
 /** Đáp số công: thêm kJ khi số lớn */
 const kJ = (A: number) => (A >= 10000 ? ` = ${N(A / 1000)}${u('kJ')}` : '');
@@ -41,11 +41,7 @@ const kJ = (A: number) => (A >= 10000 ? ` = ${N(A / 1000)}${u('kJ')}` : '');
 export default function CongCoHocLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 4 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 4, resetOn: ex.params });
 
   const show = sim.revealed;
   const lift = q.mode === 'nang';
@@ -137,19 +133,19 @@ export default function CongCoHocLesson() {
         { label: lift ? 'Độ cao' : 'Quãng đường', value: `${fmt(d * k)} m`, sub: `trên ${fmt(d)} m`, tone: 'time' },
         { label: 'Công đã thực hiện', value: `${fmtG(A * k, 0)} J`, tone: 'b' },
       ]}
-      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />}
+      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />}
       fields={
         <>
           <RangeField id="F" label="Lực kéo" tone="a" min={50} max={2000} step={50}
-            value={q.F} display={`${fmtG(q.F)} N`} onChange={(x) => update({ F: x })} hidden={q.mode !== 'keo'} />
+            value={q.F} display={`${fmtG(q.F)} N`} onChange={(x) => ex.edit({ F: x })} hidden={q.mode !== 'keo'} />
           <RangeField id="s" label="Quãng đường" tone="t" min={5} max={500} step={5}
-            value={q.s} display={`${fmtG(q.s)} m`} onChange={(x) => update({ s: x })} hidden={lift} />
+            value={q.s} display={`${fmtG(q.s)} m`} onChange={(x) => ex.edit({ s: x })} hidden={lift} />
           <RangeField id="m" label="Khối lượng vật" tone="a" min={5} max={500} step={5}
-            value={q.m} display={`${fmtG(q.m)} kg`} onChange={(x) => update({ m: x })} hidden={!lift} />
+            value={q.m} display={`${fmtG(q.m)} kg`} onChange={(x) => ex.edit({ m: x })} hidden={!lift} />
           <RangeField id="h" label="Độ cao nâng" tone="t" min={0.5} max={20} step={0.5}
-            value={q.h} display={`${fmt(q.h)} m`} onChange={(x) => update({ h: x })} hidden={!lift} />
+            value={q.h} display={`${fmt(q.h)} m`} onChange={(x) => ex.edit({ h: x })} hidden={!lift} />
           <RangeField id="A" label="Công thực hiện" tone="b" min={500} max={100000} step={500}
-            value={q.A} display={`${fmtG(q.A)} J`} onChange={(x) => update({ A: x })} hidden={q.mode !== 'luc'} />
+            value={q.A} display={`${fmtG(q.A)} J`} onChange={(x) => ex.edit({ A: x })} hidden={q.mode !== 'luc'} />
         </>
       }
       solution={solution}

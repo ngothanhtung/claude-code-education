@@ -4,7 +4,7 @@ import type p5 from 'p5';
 import { MassSolution, StoichSolution, computeMass, computeStoich, type Given, type MassSpecies, type Target } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
 import Molecule3D from '@/components/Molecule3D';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, START_LABELS } from '@/components/Controls';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
 import { coefOf, f4, type Reaction } from '@/lib/chem';
@@ -53,7 +53,6 @@ const PHOTO: Reaction = { left: [{ f: 'CO2', k: 6 }, { f: 'H2O', k: 5 }], right:
 const PHOTO_TARGETS: Target[] = [{ f: 'CO2', kind: 'V' }, { f: 'O2', kind: 'V' }];
 
 const COL_GLU = '#0C9A88';
-const LABELS: PlayLabels = { start: 'Bắt đầu', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
 
 /** Nguyên liệu "tinh bột" là chất nguyên chất */
 function fix(q: Params): Params {
@@ -63,11 +62,7 @@ function fix(q: Params): Params {
 export default function TinhBotCelluloseLesson() {
   const ex = useExercises(EXERCISES, fix);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 5, resetOn: ex.params });
   const show = sim.revealed;
   const raw = RAWS[q.raw];
   const polyName = raw.polymer;
@@ -186,21 +181,21 @@ export default function TinhBotCelluloseLesson() {
       readout={readout}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          {flowMode && <Segmented name="raw" legend="Nguyên liệu" options={RAW_OPTIONS} value={q.raw} onChange={(v) => update({ raw: v })} />}
-          {flowMode && <Segmented name="unit" legend="Đơn vị" options={UNIT_OPTIONS} value={q.unit} onChange={(v) => update({ unit: v })} />}
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          {flowMode && <Segmented name="raw" legend="Nguyên liệu" options={RAW_OPTIONS} value={q.raw} onChange={(v) => ex.edit({ raw: v })} />}
+          {flowMode && <Segmented name="unit" legend="Đơn vị" options={UNIT_OPTIONS} value={q.unit} onChange={(v) => ex.edit({ unit: v })} />}
         </>
       }
       fields={
         <>
           <RangeField id="mRaw" label={`Khối lượng ${raw.name}`} tone="a" min={0.1} max={100} step={0.1}
-            value={q.mRaw} display={`${fmt(q.mRaw)} ${q.unit}`} onChange={(x) => update({ mRaw: x })} hidden={!flowMode} />
+            value={q.mRaw} display={`${fmt(q.mRaw)} ${q.unit}`} onChange={(x) => ex.edit({ mRaw: x })} hidden={!flowMode} />
           <RangeField id="pct" label={`Hàm lượng ${polyName}`} tone="t" min={10} max={100} step={1}
-            value={q.pct} display={`${q.pct}%`} onChange={(x) => update({ pct: x })} hidden={!flowMode || q.raw === 'tinhbot'} />
+            value={q.pct} display={`${q.pct}%`} onChange={(x) => ex.edit({ pct: x })} hidden={!flowMode || q.raw === 'tinhbot'} />
           <RangeField id="H" label="Hiệu suất cả quá trình" tone="b" min={30} max={100} step={5}
-            value={q.H} display={`${q.H}%`} onChange={(x) => update({ H: x })} hidden={!flowMode} />
+            value={q.H} display={`${q.H}%`} onChange={(x) => ex.edit({ H: x })} hidden={!flowMode} />
           <RangeField id="n" label="Khối lượng tinh bột tạo thành" tone="a" min={0.05} max={2} step={0.05}
-            value={q.n} display={`${f4(q.n * 162)} g`} onChange={(x) => update({ n: x })} hidden={flowMode} />
+            value={q.n} display={`${f4(q.n * 162)} g`} onChange={(x) => ex.edit({ n: x })} hidden={flowMode} />
         </>
       }
       solution={solution}
@@ -210,7 +205,7 @@ export default function TinhBotCelluloseLesson() {
         { term: 'Nhận biết tinh bột', text: 'iodine làm tinh bột chuyển màu xanh tím' },
         { term: 'Mắt xích', text: '$M_{\\mathrm{C_6H_{10}O_5}} = 162$; glucose $M = 180$' },
       ]}
-      playLabels={LABELS}
+      playLabels={START_LABELS}
     />
   );
 }

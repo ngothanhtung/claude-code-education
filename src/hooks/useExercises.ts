@@ -36,3 +36,20 @@ export function useExercises<P>(list: ExerciseList<P>, fix?: (p: P) => P): Exerc
 
   return { params: state.params, current: state.current, count: list.length, pick, edit };
 }
+
+/**
+ * Số liệu của bài không có bộ bài tập soạn sẵn (Toán 5): một bộ mặc định, `edit(patch)` gộp phần thay đổi
+ * rồi chuẩn hóa bằng `fix`. Truyền `params` vào `useSimulation({ resetOn })` để mô phỏng tự về đầu.
+ */
+export function useParams<P>(initial: P, fix?: (p: P) => P): { params: P; edit: (patch: Partial<P>) => void } {
+  const [params, setParams] = useState(initial);
+  const edit = useCallback(
+    (patch: Partial<P>) =>
+      setParams((prev) => {
+        const next = { ...prev, ...patch };
+        return fix ? fix(next) : next;
+      }),
+    [fix],
+  );
+  return { params, edit };
+}

@@ -1,6 +1,6 @@
 import type p5 from 'p5';
 import { COL } from '@/lib/draw/colors';
-import { caption, clamp01, ease } from '@/lib/draw/geometry';
+import { arrow, caption, clamp01, ease } from '@/lib/draw/geometry';
 import { dashedLine, drawPaper, labelBox } from '@/lib/draw/scene';
 
 export interface WorkScene {
@@ -36,7 +36,7 @@ export function drawWork(p: p5, s: WorkScene) {
   p.textStyle(p.BOLD);
   p.text('Công A', x0 - 12, y + 9);
   p.textStyle(p.NORMAL);
-  p.fill('#EEF1F7');
+  p.fill(COL.track);
   p.rect(x0, y, w, 18, 9);
   p.fill(COL.ink);
   if (k > 0) p.rect(x0, y, w * k, 18, 9);
@@ -62,20 +62,6 @@ function box(p: p5, x: number, yBottom: number, w: number, h: number, wheels: bo
   }
 }
 
-function arrow(p: p5, x1: number, y1: number, x2: number, y2: number, col: string) {
-  p.stroke(col);
-  p.strokeWeight(4);
-  p.line(x1, y1, x2, y2);
-  const a = Math.atan2(y2 - y1, x2 - x1);
-  p.noStroke();
-  p.fill(col);
-  p.triangle(
-    x2 + Math.cos(a) * 10, y2 + Math.sin(a) * 10,
-    x2 + Math.cos(a + 2.3) * 10, y2 + Math.sin(a + 2.3) * 10,
-    x2 + Math.cos(a - 2.3) * 10, y2 + Math.sin(a - 2.3) * 10,
-  );
-}
-
 function drawPull(p: p5, s: WorkScene, k: number) {
   const X0 = 110;
   const DIST = 430;
@@ -98,7 +84,7 @@ function drawPull(p: p5, s: WorkScene, k: number) {
   const x = X0 + DIST * k;
   box(p, x, FLOOR, BW, BH, s.wheels);
   const yF = FLOOR - BH / 2 - (s.wheels ? 10 : 0);
-  arrow(p, x + BW, yF, x + BW + 80, yF, COL.aText);
+  arrow(p, x + BW, yF, x + BW + 90, yF, COL.aText, { weight: 4 });
   labelBox(p, x + BW + 60, yF - 24, `F = ${s.FText}`, COL.aText, 14);
 
   // quãng đường dịch chuyển
@@ -141,7 +127,7 @@ function drawLift(p: p5, s: WorkScene, k: number) {
   p.strokeWeight(1);
   p.rect(LX - BW / 2, TOPY, BW, BH, 3);
   box(p, LX - BW / 2, yBottom, BW, BH, false);
-  arrow(p, LX + BW / 2 + 30, yBottom - BH / 2 + 30, LX + BW / 2 + 30, yBottom - BH / 2 - 40, COL.aText);
+  arrow(p, LX + BW / 2 + 30, yBottom - BH / 2 + 30, LX + BW / 2 + 30, yBottom - BH / 2 - 50, COL.aText, { weight: 4 });
   labelBox(p, LX + BW / 2 + 90, yBottom - BH / 2, `F = ${s.FText}`, COL.aText, 14);
 
   // độ cao nâng

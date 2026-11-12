@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -48,16 +48,12 @@ const ELEMENTS: Record<ElId, {
 
 const EL_OPTIONS = (Object.keys(ELEMENTS) as ElId[]).map((k) => ({ value: k, label: `${k} (${ELEMENTS[k].metal ? 'kim loại' : 'phi kim'})` }));
 
-const LABELS: PlayLabels = { start: 'Đốt rồi hòa vào nước', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại thí nghiệm' };
+const LABELS = playLabels('Đốt rồi hòa vào nước', 'Tiếp tục', 'Làm lại thí nghiệm');
 
 export default function KimLoaiPhiKimLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 7 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 7, resetOn: ex.params });
 
   const show = sim.revealed;
   const E = ELEMENTS[q.el];
@@ -130,10 +126,10 @@ export default function KimLoaiPhiKimLesson() {
         { label: cu(E.oxide), value: show ? (E.gas ? `${f4(V)} L` : `${f4(mOx)} g`) : '?', tone: 'a' },
         { label: 'Quỳ tím', value: show ? `hóa ${color}` : '?', tone: 'b' },
       ]}
-      mode={<Segmented name="el" legend="Nguyên tố" options={EL_OPTIONS} value={q.el} onChange={(v) => update({ el: v })} />}
+      mode={<Segmented name="el" legend="Nguyên tố" options={EL_OPTIONS} value={q.el} onChange={(v) => ex.edit({ el: v })} />}
       fields={
         <RangeField id="m" label={`Khối lượng ${q.el}`} tone="a" min={0.1} max={20} step={0.1}
-          value={q.m} display={`${fmt(q.m)} g`} onChange={(x) => update({ m: x })} />
+          value={q.m} display={`${fmt(q.m)} g`} onChange={(x) => ex.edit({ m: x })} />
       }
       solution={solution}
       rules={[

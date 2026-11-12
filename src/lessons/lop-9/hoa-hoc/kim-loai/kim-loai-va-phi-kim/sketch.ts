@@ -68,7 +68,7 @@ export function drawElements(p: p5, s: ElementScene) {
   const kx = 680;
   p.noStroke();
   p.fill('#FFFFFF');
-  p.stroke('#C9D3EA');
+  p.stroke(COL.inkLine);
   p.strokeWeight(1.5);
   p.rect(kx - 90, 130, 180, 150, 10);
   p.noStroke();

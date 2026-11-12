@@ -55,7 +55,7 @@ export function drawAlcohol(p: p5, s: AlcoholScene) {
   const cx = 610;
   p.noStroke();
   p.fill('#FFFFFF');
-  p.stroke('#C9D3EA');
+  p.stroke(COL.inkLine);
   p.strokeWeight(1.5);
   p.rect(cx - 120, 150, 240, 170, 12);
   p.noStroke();

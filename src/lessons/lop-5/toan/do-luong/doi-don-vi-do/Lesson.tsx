@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { DecimalField, Num, Segmented, type PlayLabels } from '@/components/Controls';
+import { DecimalField, Num, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step } from '@/components/Notebook';
 import { B, NS, UN } from '@/lib/tex';
+import { useParams } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
 import { drawUnits } from './sketch';
 import { KINDS, place, powerOf10, shiftDecimal, viNumber, type Kind } from './units';
@@ -19,10 +19,10 @@ interface Params {
 
 const KIND_OPTIONS = (Object.keys(KINDS) as Kind[]).map((k) => ({ value: k, label: KINDS[k].label }));
 
-const LABELS: PlayLabels = { start: 'Dời dấu phẩy', pause: 'Tạm dừng', resume: 'Dời tiếp', again: 'Xem lại' };
+const LABELS = playLabels('Dời dấu phẩy', 'Dời tiếp', 'Xem lại');
 
 export default function DoiDonViLesson() {
-  const [params, setParams] = useState<Params>({ kind: 'dientich', ...KINDS.dientich.preset });
+  const { params, edit } = useParams<Params>({ kind: 'dientich', ...KINDS.dientich.preset });
   const info = KINDS[params.kind];
   const { value, from, to } = params;
   const k = info.k;
@@ -33,12 +33,8 @@ export default function DoiDonViLesson() {
   const shift = k * (to - from);
   const result = shiftDecimal(value, shift);
 
-  const sim = useSimulation({ total: Math.max(steps, 1), enabled: valid, defaultDuration: 6 });
-  const update = (patch: Partial<Params>) => {
-    setParams((prev) => ({ ...prev, ...patch }));
-    sim.reset();
-  };
-  const changeKind = (kind: Kind) => update({ kind, ...KINDS[kind].preset });
+  const sim = useSimulation({ total: Math.max(steps, 1), enabled: valid, defaultDuration: 6, resetOn: params });
+  const changeKind = (kind: Kind) => edit({ kind, ...KINDS[kind].preset });
 
   const show = sim.revealed;
   const fromU = info.units[from];
@@ -108,8 +104,8 @@ export default function DoiDonViLesson() {
       mode={
         <>
           <Segmented name="kind" legend="Đại lượng" options={KIND_OPTIONS} value={params.kind} onChange={changeKind} />
-          <Segmented name="from" legend="Từ đơn vị" options={unitOptions} value={from} onChange={(f) => update({ from: f })} />
-          <Segmented name="to" legend="Sang đơn vị" options={unitOptions} value={to} onChange={(t) => update({ to: t })} />
+          <Segmented name="from" legend="Từ đơn vị" options={unitOptions} value={from} onChange={(f) => edit({ from: f })} />
+          <Segmented name="to" legend="Sang đơn vị" options={unitOptions} value={to} onChange={(t) => edit({ to: t })} />
         </>
       }
       fields={
@@ -119,7 +115,7 @@ export default function DoiDonViLesson() {
           label="Số đo"
           tone="a"
           value={value}
-          onChange={(v) => update({ value: v })}
+          onChange={(v) => edit({ value: v })}
           hint="Dùng dấu phẩy cho số thập phân, ví dụ 3,5"
           maxDigits={7}
         />

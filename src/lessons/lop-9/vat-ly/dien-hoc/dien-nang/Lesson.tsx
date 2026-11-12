@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { EXERCISES } from './exercises';
@@ -19,18 +19,14 @@ export interface Params {
   price: number; // đồng mỗi kWh
 }
 
-const LABELS: PlayLabels = { start: 'Dùng điện', pause: 'Tạm dừng', resume: 'Dùng tiếp', again: 'Dùng lại' };
+const LABELS = playLabels('Dùng điện', 'Dùng tiếp', 'Dùng lại');
 
 const PS = '\\mathscr{P}';
 
 export default function DienNangLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: q.days, defaultDuration: 7 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: q.days, defaultDuration: 7, resetOn: ex.params });
 
   const show = sim.revealed;
   const Pkw = q.P / 1000;
@@ -89,13 +85,13 @@ export default function DienNangLesson() {
       fields={
         <>
           <RangeField id="P" label="Công suất dụng cụ" tone="a" min={100} max={2500} step={100}
-            value={q.P} display={`${fmtG(q.P, 0)} W`} onChange={(v) => update({ P: v })} />
+            value={q.P} display={`${fmtG(q.P, 0)} W`} onChange={(v) => ex.edit({ P: v })} />
           <RangeField id="hours" label="Thời gian dùng mỗi ngày" tone="t" min={0.5} max={12} step={0.5}
-            value={q.hours} display={`${fmt(q.hours)} giờ`} onChange={(v) => update({ hours: v })} />
+            value={q.hours} display={`${fmt(q.hours)} giờ`} onChange={(v) => ex.edit({ hours: v })} />
           <RangeField id="days" label="Số ngày" tone="t" min={1} max={31} step={1}
-            value={q.days} display={`${q.days} ngày`} onChange={(v) => update({ days: v })} />
+            value={q.days} display={`${q.days} ngày`} onChange={(v) => ex.edit({ days: v })} />
           <RangeField id="price" label="Giá điện mỗi kWh" tone="b" min={1500} max={3500} step={100}
-            value={q.price} display={`${fmtG(q.price, 0)} đồng`} onChange={(v) => update({ price: v })} />
+            value={q.price} display={`${fmtG(q.price, 0)} đồng`} onChange={(v) => ex.edit({ price: v })} />
         </>
       }
       solution={solution}

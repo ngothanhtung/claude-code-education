@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { EXERCISES } from './exercises';
@@ -49,16 +49,12 @@ function withObject(q: Params, obj: ObjId): Params {
   return { ...q, obj, m, v, W };
 }
 
-const LABELS: PlayLabels = { start: 'Cho vật chuyển động', pause: 'Tạm dừng', resume: 'Chạy tiếp', again: 'Chạy lại' };
+const LABELS = playLabels('Cho vật chuyển động', 'Chạy tiếp', 'Chạy lại');
 
 export default function DongNangLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 4 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 4, resetOn: ex.params });
 
   const o = OBJECTS[q.obj];
   const show = sim.revealed;
@@ -166,18 +162,18 @@ export default function DongNangLesson() {
       ]}
       mode={
         <>
-          <Segmented name="find" legend="Dạng đề" options={FIND_OPTIONS} value={q.find} onChange={(v) => update({ find: v })} />
-          <Segmented name="obj" legend="Vật" options={OBJ_OPTIONS} value={q.obj} onChange={(k) => update(withObject(q, k))} />
+          <Segmented name="find" legend="Dạng đề" options={FIND_OPTIONS} value={q.find} onChange={(v) => ex.edit({ find: v })} />
+          <Segmented name="obj" legend="Vật" options={OBJ_OPTIONS} value={q.obj} onChange={(k) => ex.edit(withObject(q, k))} />
         </>
       }
       fields={
         <>
           <RangeField id="m" label="Khối lượng" tone="a" min={mMin} max={mMax} step={mStep}
-            value={q.m} display={`${fmtG(q.m)} kg`} onChange={(x) => update({ m: x })} hidden={q.find === 'm'} />
+            value={q.m} display={`${fmtG(q.m)} kg`} onChange={(x) => ex.edit({ m: x })} hidden={q.find === 'm'} />
           <RangeField id="v" label="Vận tốc" tone="t" min={vMin} max={vMax} step={vStep}
-            value={q.v} display={`${fmt(q.v)} ${vUnit}`} onChange={(x) => update({ v: x })} hidden={q.find === 'v'} />
+            value={q.v} display={`${fmt(q.v)} ${vUnit}`} onChange={(x) => ex.edit({ v: x })} hidden={q.find === 'v'} />
           <RangeField id="W" label="Động năng" tone="b" min={wMin} max={wMax} step={wStep}
-            value={q.W} display={`${fmtG(q.W)} J`} onChange={(x) => update({ W: x })} hidden={q.find === 'W'} />
+            value={q.W} display={`${fmtG(q.W)} J`} onChange={(x) => ex.edit({ W: x })} hidden={q.find === 'W'} />
         </>
       }
       solution={solution}

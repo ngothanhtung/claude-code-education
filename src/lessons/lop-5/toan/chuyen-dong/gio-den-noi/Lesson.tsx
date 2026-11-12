@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
 import { Num, RangeField } from '@/components/Controls';
 import { Answer, Calc, MinutesLine, Step } from '@/components/Notebook';
 import { B, H, N, T as T_, U } from '@/lib/tex';
+import { useParams } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
 import { clockStr, fmt, hm } from '@/lib/format';
 import { driveMinutes, drawGioDen, isResting, posKm } from './sketch';
@@ -28,18 +28,13 @@ function snapDistance(raw: number, V: number) {
   return Math.min(hi, Math.max(lo, Math.round(raw / unit) * unit));
 }
 
+const fix = (q: Params): Params => ({ ...q, S: snapDistance(q.S, q.V) });
+
 export default function GioDenLesson() {
-  const [params, setParams] = useState<Params>({ dep: 450, S: 120, V: 48, rest: 15 });
+  const { params, edit } = useParams<Params>({ dep: 450, S: 120, V: 48, rest: 15 }, fix);
   const { dep, S, V, rest } = params;
   const total = driveMinutes(S, V) + rest; // phút
-  const sim = useSimulation({ total, defaultDuration: 10 });
-  const update = (patch: Partial<Params>) => {
-    setParams((prev) => {
-      const next = { ...prev, ...patch };
-      return { ...next, S: snapDistance(next.S, next.V) };
-    });
-    sim.reset();
-  };
+  const sim = useSimulation({ total, defaultDuration: 10, resetOn: params });
 
   const m = sim.t;
   const show = sim.revealed;
@@ -100,13 +95,13 @@ export default function GioDenLesson() {
       fields={
         <>
           <RangeField id="sDep" label="Giờ khởi hành" tone="t" min={300} max={600} step={15}
-            value={dep} display={clockStr(dep)} onChange={(v) => update({ dep: v })} />
+            value={dep} display={clockStr(dep)} onChange={(v) => edit({ dep: v })} />
           <RangeField id="sS" label="Quãng đường AB" tone="t" min={20} max={240} step={1}
-            value={S} display={`${fmt(S)} km`} onChange={(v) => update({ S: v })} />
+            value={S} display={`${fmt(S)} km`} onChange={(v) => edit({ S: v })} />
           <RangeField id="sV" label="Vận tốc ô tô" tone="a" min={20} max={88} step={4}
-            value={V} display={`${V} km/giờ`} onChange={(v) => update({ V: v })} />
+            value={V} display={`${V} km/giờ`} onChange={(v) => edit({ V: v })} />
           <RangeField id="sRest" label="Thời gian nghỉ" tone="t" min={0} max={60} step={5}
-            value={rest} display={rest > 0 ? `${rest} phút` : 'không nghỉ'} onChange={(v) => update({ rest: v })} />
+            value={rest} display={rest > 0 ? `${rest} phút` : 'không nghỉ'} onChange={(v) => edit({ rest: v })} />
         </>
       }
       solution={solution}

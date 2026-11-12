@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { EXERCISES } from './exercises';
@@ -25,16 +25,12 @@ const MODE_OPTIONS = [
   { value: 'songsong', label: 'Mắc song song' },
 ] as const;
 
-const LABELS: PlayLabels = { start: 'Đóng mạch', pause: 'Tạm dừng', resume: 'Chạy tiếp', again: 'Đóng lại' };
+const LABELS = playLabels('Đóng mạch', 'Chạy tiếp', 'Đóng lại');
 
 export default function MachDienLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 4 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 4, resetOn: ex.params });
 
   const parallel = q.mode === 'songsong';
   const { U, R1, R2 } = q;
@@ -139,15 +135,15 @@ export default function MachDienLesson() {
           ? { label: 'Dòng qua R₂', value: show ? `${fmt(I2)} A` : '? A', tone: 'b' }
           : { label: 'Hiệu điện thế U₂', value: show ? `${fmt(U2)} V` : '? V', tone: 'b' },
       ]}
-      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />}
+      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />}
       fields={
         <>
           <RangeField id="U" label="Hiệu điện thế U" tone="t" min={2} max={24} step={1}
-            value={U} display={`${fmt(U)} V`} onChange={(v) => update({ U: v })} />
+            value={U} display={`${fmt(U)} V`} onChange={(v) => ex.edit({ U: v })} />
           <RangeField id="R1" label="Điện trở R₁" tone="a" min={2} max={60} step={2}
-            value={R1} display={`${fmt(R1)} Ω`} onChange={(v) => update({ R1: v })} />
+            value={R1} display={`${fmt(R1)} Ω`} onChange={(v) => ex.edit({ R1: v })} />
           <RangeField id="R2" label="Điện trở R₂" tone="b" min={2} max={60} step={2}
-            value={R2} display={`${fmt(R2)} Ω`} onChange={(v) => update({ R2: v })} />
+            value={R2} display={`${fmt(R2)} Ω`} onChange={(v) => ex.edit({ R2: v })} />
         </>
       }
       solution={solution}

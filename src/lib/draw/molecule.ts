@@ -1,6 +1,7 @@
 import type p5 from 'p5';
 import { cu, type Reaction } from '@/lib/chem';
 import { COL } from './colors';
+import { arrowHead } from './geometry';
 
 /**
  * Mô hình phân tử dạng rỗng (quả cầu – thanh nối) cho các bài Hóa học hữu cơ và phương trình
@@ -271,9 +272,7 @@ export function drawReaction(p: p5, r: Reaction, k: number, y: number, s = 22, x
         p.stroke(COL.ink);
         p.strokeWeight(2.5);
         p.line(x + 6, y, x + gap + 18, y);
-        p.noStroke();
-        p.fill(COL.ink);
-        p.triangle(x + gap + 24, y, x + gap + 14, y - 6, x + gap + 14, y + 6);
+        arrowHead(p, x + gap + 24, y, 0, COL.ink);
         x += gap + 30;
       } else {
         p.text('+', x + gap / 2, y);

@@ -32,11 +32,7 @@ const MODE_OPTIONS = [
 export default function PhanXaToanPhanLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 4 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 4, resetOn: ex.params });
 
   const med = MEDIA[q.medium];
   const igh = criticalAngle(med.n);
@@ -140,13 +136,13 @@ export default function PhanXaToanPhanLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(m) => update({ mode: m })} />
-          <Segmented name="medium" legend="Môi trường" options={MEDIUM_OPTIONS} value={q.medium} onChange={(m) => update({ medium: m })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(m) => ex.edit({ mode: m })} />
+          <Segmented name="medium" legend="Môi trường" options={MEDIUM_OPTIONS} value={q.medium} onChange={(m) => ex.edit({ medium: m })} />
         </>
       }
       fields={
         <RangeField id="i" label="Góc tới i" tone="a" min={5} max={89} step={1}
-          value={q.i} display={`${q.i}°`} onChange={(v) => update({ i: v })} />
+          value={q.i} display={`${q.i}°`} onChange={(v) => ex.edit({ i: v })} />
       }
       solution={solution}
       rules={[

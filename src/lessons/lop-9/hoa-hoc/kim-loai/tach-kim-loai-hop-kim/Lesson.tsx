@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, START_LABELS } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -34,18 +34,13 @@ const FURNACE: Reaction = { left: [{ f: 'Fe2O3', k: 1 }, { f: 'CO', k: 3 }], rig
 const ELECTRO: Reaction = { left: [{ f: 'Al2O3', k: 2 }], right: [{ f: 'Al', k: 4 }, { f: 'O2', k: 3 }] };
 const BRASS: Reaction = { left: [{ f: 'Zn', k: 1 }, { f: 'HCl', k: 2 }], right: [{ f: 'ZnCl2', k: 1 }, { f: 'H2', k: 1 }] };
 
-const LABELS: PlayLabels = { start: 'Bắt đầu', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
 
 const tex4 = (x: number) => N(x, 4);
 
 export default function TachKimLoaiLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 6 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 6, resetOn: ex.params });
 
   const show = sim.revealed;
   const e = (x: number) => eq(isExact(x, 4));
@@ -177,19 +172,19 @@ export default function TachKimLoaiLesson() {
             : 'Mẩu đồng thau trong dung dịch HCl: kẽm tan tạo bọt khí hydrogen, đồng còn lại.'
       }
       readout={readout}
-      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />}
+      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />}
       fields={
         <>
           <RangeField id="ore" label={q.mode === 'locao' ? 'Khối lượng quặng' : 'Khối lượng Al₂O₃'} tone="a" min={0.1} max={100} step={0.1}
-            value={q.ore} display={`${fmt(q.ore)} tấn`} onChange={(x) => update({ ore: x })} hidden={q.mode === 'hopkim'} />
+            value={q.ore} display={`${fmt(q.ore)} tấn`} onChange={(x) => ex.edit({ ore: x })} hidden={q.mode === 'hopkim'} />
           <RangeField id="pct" label="Hàm lượng Fe₂O₃ trong quặng" tone="t" min={30} max={95} step={5}
-            value={q.pct} display={`${q.pct}%`} onChange={(x) => update({ pct: x })} hidden={q.mode !== 'locao'} />
+            value={q.pct} display={`${q.pct}%`} onChange={(x) => ex.edit({ pct: x })} hidden={q.mode !== 'locao'} />
           <RangeField id="H" label="Hiệu suất" tone="b" min={50} max={100} step={5}
-            value={q.H} display={`${q.H}%`} onChange={(x) => update({ H: x })} hidden={q.mode === 'hopkim'} />
+            value={q.H} display={`${q.H}%`} onChange={(x) => ex.edit({ H: x })} hidden={q.mode === 'hopkim'} />
           <RangeField id="alloy" label="Khối lượng đồng thau" tone="a" min={5} max={50} step={1}
-            value={q.alloy} display={`${q.alloy} g`} onChange={(x) => update({ alloy: x })} hidden={q.mode !== 'hopkim'} />
+            value={q.alloy} display={`${q.alloy} g`} onChange={(x) => ex.edit({ alloy: x })} hidden={q.mode !== 'hopkim'} />
           <RangeField id="zn" label="Thể tích H₂ (theo % Zn)" tone="t" min={10} max={50} step={2.5}
-            value={q.zn} display={`${f4(V)} L`} onChange={(x) => update({ zn: x })} hidden={q.mode !== 'hopkim'} />
+            value={q.zn} display={`${f4(V)} L`} onChange={(x) => ex.edit({ zn: x })} hidden={q.mode !== 'hopkim'} />
         </>
       }
       solution={solution}
@@ -199,7 +194,7 @@ export default function TachKimLoaiLesson() {
         { term: 'Hợp kim', text: 'gang, thép (Fe – C), đồng thau (Cu – Zn), duralumin (Al – Cu…) bền và cứng hơn kim loại nguyên chất' },
         { term: 'Hiệu suất', text: 'lượng thực tế $=$ lượng lí thuyết $\\times H \\chia 100$' },
       ]}
-      playLabels={LABELS}
+      playLabels={START_LABELS}
     />
   );
 }

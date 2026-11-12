@@ -103,7 +103,7 @@ export function drawBench(p: p5, s: BenchScene) {
 
   // màn chắn
   p.noStroke();
-  p.fill('#EEF1F7');
+  p.fill(COL.track);
   p.rect(screenX - 6, AXIS - 120, 12, 240, 3);
   p.stroke(COL.muted);
   p.strokeWeight(3);

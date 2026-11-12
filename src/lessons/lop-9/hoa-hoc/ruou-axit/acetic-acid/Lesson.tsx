@@ -1,8 +1,8 @@
 'use client';
 
-import { StoichSolution, computeStoich, type Given, type Target } from '@/components/ChemSteps';
+import { StoichSolution, computeStoich, stoichReadout, type Given, type Target } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, REACT_LABELS } from '@/components/Controls';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
 import { coefOf, cu, eqUni, f4, molarMass, type Reaction } from '@/lib/chem';
@@ -64,16 +64,11 @@ function setup(q: Params): { r: Reaction; cond?: string; uni?: string; targets: 
 }
 
 const NAMES: Record<string, string> = { CH3COOH: 'acetic acid' };
-const LABELS: PlayLabels = { start: 'Cho phản ứng', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
 
 export default function AceticAcidLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 5, resetOn: ex.params });
   const show = sim.revealed;
 
   const S = setup(q);
@@ -132,26 +127,19 @@ export default function AceticAcidLesson() {
       problem={problem}
       draw={draw}
       canvasLabel="Phương trình hóa học bằng mô hình phân tử; các thanh dưới là số mol từng chất."
-      readout={[
-        { label: 'Số mol CH₃COOH', value: `${f4(st.nGiven)} mol`, tone: 'time' },
-        ...st.items.slice(0, 2).map((it, i) => ({
-          label: `${it.kind === 'V' ? 'Thể tích' : 'Khối lượng'} ${cu(it.f)}`,
-          value: show ? `${f4(it.value)} ${it.kind === 'V' ? 'L' : 'g'}` : `? ${it.kind === 'V' ? 'L' : 'g'}`,
-          tone: (i === 0 ? 'a' : 'b') as 'a' | 'b',
-        })),
-      ]}
+      readout={stoichReadout(st, show, 'CH₃COOH')}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          {q.mode === 'kimloai' && <Segmented name="metal" legend="Kim loại" options={METAL_OPTIONS} value={q.metal} onChange={(v) => update({ metal: v })} />}
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          {q.mode === 'kimloai' && <Segmented name="metal" legend="Kim loại" options={METAL_OPTIONS} value={q.metal} onChange={(v) => ex.edit({ metal: v })} />}
         </>
       }
       fields={
         <>
           <RangeField id="n" label="Khối lượng acetic acid" tone="a" min={0.05} max={2} step={0.05}
-            value={q.n} display={`${g} g`} onChange={(x) => update({ n: x })} />
+            value={q.n} display={`${g} g`} onChange={(x) => ex.edit({ n: x })} />
           <RangeField id="H" label="Hiệu suất ester hóa" tone="b" min={30} max={100} step={5}
-            value={q.H} display={`${q.H}%`} onChange={(x) => update({ H: x })} hidden={q.mode !== 'ester'} />
+            value={q.H} display={`${q.H}%`} onChange={(x) => ex.edit({ H: x })} hidden={q.mode !== 'ester'} />
         </>
       }
       solution={<StoichSolution r={S.r} cond={S.cond} reversible={S.reversible} given={given} targets={S.targets} H={H} show={show} names={NAMES} />}
@@ -160,7 +148,7 @@ export default function AceticAcidLesson() {
         { term: 'Tính acid', text: 'làm quỳ tím hóa đỏ; tác dụng với base, kim loại đứng trước H, muối carbonate' },
         { term: 'Ester hóa', text: 'acid + alcohol ⇌ ester + nước (xúc tác $\\mathrm{H_2SO_4}$ đặc, đun nóng)' },
       ]}
-      playLabels={LABELS}
+      playLabels={REACT_LABELS}
     />
   );
 }

@@ -3,7 +3,7 @@
 import type p5 from 'p5';
 import { StoichSolution, computeStoich, type Given, type Target } from '@/components/ChemSteps';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -36,16 +36,12 @@ const MODE_OPTIONS = [
 const FAT_OPTIONS = (Object.keys(FATS) as FatId[]).map((k) => ({ value: k, label: FATS[k].name }));
 
 const GLY = 'C3H5(OH)3';
-const LABELS: PlayLabels = { start: 'Đun với kiềm', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
+const LABELS = playLabels('Đun với kiềm');
 
 export default function LipidLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 5, resetOn: ex.params });
   const show = sim.revealed;
 
   const F = FATS[q.fat];
@@ -116,16 +112,16 @@ export default function LipidLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          <Segmented name="fat" legend="Chất béo" options={FAT_OPTIONS} value={q.fat} onChange={(v) => update({ fat: v })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          <Segmented name="fat" legend="Chất béo" options={FAT_OPTIONS} value={q.fat} onChange={(v) => ex.edit({ fat: v })} />
         </>
       }
       fields={
         <>
           <RangeField id="n" label="Khối lượng chất béo" tone="a" min={0.01} max={0.5} step={0.01}
-            value={q.n} display={`${f4(given.value)} g`} onChange={(x) => update({ n: x })} />
+            value={q.n} display={`${f4(given.value)} g`} onChange={(x) => ex.edit({ n: x })} />
           <RangeField id="H" label="Hiệu suất" tone="b" min={50} max={100} step={5}
-            value={q.H} display={`${q.H}%`} onChange={(x) => update({ H: x })} hidden={q.mode !== 'xaphong'} />
+            value={q.H} display={`${q.H}%`} onChange={(x) => ex.edit({ H: x })} hidden={q.mode !== 'xaphong'} />
         </>
       }
       solution={solution}

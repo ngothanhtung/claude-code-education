@@ -2,10 +2,11 @@
 
 import { Fragment, type ReactNode } from 'react';
 import {
-  VM, ce, coefOf, e4, eqTex, mOf, massOf, molFromMass, molFromVolume, molRatio, molarMass, N4, VOf, volumeOf,
+  VM, ce, coefOf, cu, e4, eqTex, f4, mOf, massOf, molFromMass, molFromVolume, molRatio, molarMass, N4, VOf, volumeOf,
   type Reaction,
 } from '@/lib/chem';
 import { B, N, T, U, u } from '@/lib/tex';
+import type { ReadoutItem } from './Controls';
 import { Answer, Calc, Step, Summary } from './Notebook';
 
 /**
@@ -55,6 +56,21 @@ export function computeStoich(r: Reaction, given: Given, targets: Target[], H = 
     return { ...t, nTheory, n, product, value: t.kind === 'V' ? n * VM : n * molarMass(t.f) };
   });
   return { nGiven, items };
+}
+
+/**
+ * Ô số liệu dưới mô phỏng cho bài tính theo PTHH: số mol chất đã cho, rồi tối đa hai đại lượng cần tìm
+ * ("Khối lượng …" / "Thể tích …", ẩn bằng "?" cho tới khi hiện đáp án). `nameOf` đổi công thức thành tên hiển thị.
+ */
+export function stoichReadout(st: Stoich, show: boolean, givenName: string, nameOf: (f: string) => string = cu): ReadoutItem[] {
+  return [
+    { label: `Số mol ${givenName}`, value: `${f4(st.nGiven)} mol`, tone: 'time' },
+    ...st.items.slice(0, 2).map((it, i): ReadoutItem => ({
+      label: `${it.kind === 'V' ? 'Thể tích' : 'Khối lượng'} ${nameOf(it.f)}`,
+      value: `${show ? f4(it.value) : '?'} ${unit(it)}`,
+      tone: i === 0 ? 'a' : 'b',
+    })),
+  ];
 }
 
 /** Dòng đáp số của một đại lượng */

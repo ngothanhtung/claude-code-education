@@ -3,7 +3,7 @@
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
 import Molecule3D from '@/components/Molecule3D';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, REACT_LABELS } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -43,7 +43,6 @@ const GIVEN_OPTIONS = [
   { value: 'm', label: 'Khối lượng' },
 ] as const;
 
-const LABELS: PlayLabels = { start: 'Cho phản ứng', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
 
 /** Phân tử 3D ứng với chất đang chọn */
 const MOL3D_OF: Record<AlkaneId, Mol3DId> = { CH4: 'methane', C2H6: 'ethane', C3H8: 'propane', C4H10: 'butane' };
@@ -51,11 +50,7 @@ const MOL3D_OF: Record<AlkaneId, Mol3DId> = { CH4: 'methane', C2H6: 'ethane', C3
 export default function AlkaneLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 5, resetOn: ex.params });
 
   const show = sim.revealed;
   const dot = q.mode === 'dot';
@@ -148,14 +143,14 @@ export default function AlkaneLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          <Segmented name="mol" legend="Alkane" options={MOL_OPTIONS} value={q.mol} onChange={(v) => update({ mol: v })} />
-          <Segmented name="given" legend="Đề cho" options={GIVEN_OPTIONS} value={q.given} onChange={(v) => update({ given: v })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          <Segmented name="mol" legend="Alkane" options={MOL_OPTIONS} value={q.mol} onChange={(v) => ex.edit({ mol: v })} />
+          <Segmented name="given" legend="Đề cho" options={GIVEN_OPTIONS} value={q.given} onChange={(v) => ex.edit({ given: v })} />
         </>
       }
       fields={
         <RangeField id="n" label={`Lượng ${cu(q.mol)} (${fmt(q.n, 2)} mol)`} tone="a" min={0.05} max={2} step={0.05}
-          value={q.n} display={givenText} onChange={(x) => update({ n: x })} />
+          value={q.n} display={givenText} onChange={(x) => ex.edit({ n: x })} />
       }
       solution={solution}
       rules={[
@@ -164,7 +159,7 @@ export default function AlkaneLesson() {
         { term: 'Phản ứng thế', text: '$\\mathrm{CH_4} + \\mathrm{Cl_2} \\xrightarrow{\\text{ánh sáng}} \\mathrm{CH_3Cl} + \\mathrm{HCl}$' },
         { term: 'Công thức', text: '$n = V \\chia 24{,}79$; $n = m \\chia M$' },
       ]}
-      playLabels={LABELS}
+      playLabels={REACT_LABELS}
     />
   );
 }

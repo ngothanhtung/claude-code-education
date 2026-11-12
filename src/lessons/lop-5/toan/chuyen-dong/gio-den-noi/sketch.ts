@@ -1,5 +1,6 @@
 import type p5 from 'p5';
 import { COL } from '@/lib/draw/colors';
+import { arrowHead } from '@/lib/draw/geometry';
 import { bracket, drawBackground, drawRoadTicks, roadsideTag, topTag } from '@/lib/draw/scene';
 import { CAR_HALF, drawCar } from '@/lib/draw/vehicles';
 import { clockStr, hm } from '@/lib/format';
@@ -195,9 +196,7 @@ function drawTimeline(p: p5, s: GioDenScene, half: number) {
   p.stroke(COL.ink);
   p.strokeWeight(2);
   p.line(x, TL_Y - 12, x, TL_Y + 12);
-  p.noStroke();
-  p.fill(COL.ink);
-  p.triangle(x - 6, TL_Y - 20, x + 6, TL_Y - 20, x, TL_Y - 12);
+  arrowHead(p, x, TL_Y - 12, Math.PI / 2, COL.ink, 8, 6);
 
   bracket(p, X0, X1, 462, `đi và nghỉ hết ${s.done || s.revealed ? hm(T / 60) : '?'}`, COL.ink);
   p.textStyle(p.NORMAL);

@@ -1,6 +1,6 @@
 import type p5 from 'p5';
 import { COL } from '@/lib/draw/colors';
-import { caption, ease, phase } from '@/lib/draw/geometry';
+import { arrowHead, caption, ease, phase } from '@/lib/draw/geometry';
 import { drawPaper, labelBox } from '@/lib/draw/scene';
 import { fmt } from '@/lib/format';
 
@@ -147,7 +147,7 @@ function drawFlow(p: p5, s: DamScene, k: number) {
     const x = x0 + i * 150;
     const on = k > i / 3;
     p.noStroke();
-    p.fill(on ? col : '#E6EAF2');
+    p.fill(on ? col : COL.track);
     p.rect(x, y - 24, 120, 48, 8);
     p.fill(on ? '#FFFFFF' : COL.muted);
     p.textAlign(p.CENTER, p.CENTER);
@@ -159,8 +159,7 @@ function drawFlow(p: p5, s: DamScene, k: number) {
       p.text(val, x + 60, y + 11);
     }
     if (i < 2) {
-      p.fill(COL.muted);
-      p.triangle(x + 128, y - 7, x + 128, y + 7, x + 142, y);
+      arrowHead(p, x + 142, y, 0, COL.muted, 14, 7);
     }
   });
   if (k >= 1) {

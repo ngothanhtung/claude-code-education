@@ -1,7 +1,7 @@
 import type p5 from 'p5';
 import { ACTIVITY } from '@/lib/chem';
 import { COL } from '@/lib/draw/colors';
-import { caption, clamp01 } from '@/lib/draw/geometry';
+import { arrow, caption, clamp01 } from '@/lib/draw/geometry';
 import { deposit, fizz, glassBeaker, liquid, metalStrip, pits, surfaceY, type Beaker } from '@/lib/draw/fx';
 import { mix } from '@/lib/draw/lab';
 import { drawPaper, labelBox } from '@/lib/draw/scene';
@@ -81,7 +81,7 @@ function drawActivityRow(p: p5, s: SeriesScene) {
     const x = x0 + i * w;
     const isM = el === s.metal;
     const isC = el === s.cation;
-    p.stroke(isM ? COL.a : isC ? COL.b : '#C9D3EA');
+    p.stroke(isM ? COL.a : isC ? COL.b : COL.inkLine);
     p.strokeWeight(isM || isC ? 3 : 1.5);
     p.fill(isM ? '#FDE3E1' : isC ? '#D8F2EE' : '#FFFFFF');
     p.rect(x + 3, y, w - 6, 40, 6);
@@ -98,12 +98,6 @@ function drawActivityRow(p: p5, s: SeriesScene) {
   p.text('mạnh', x0, y + 54);
   p.textAlign(p.RIGHT, p.CENTER);
   p.text('yếu', x0 + ACTIVITY.length * w, y + 54);
-  p.stroke(COL.muted);
-  p.strokeWeight(1.5);
-  p.line(x0 + 40, y + 54, x0 + ACTIVITY.length * w - 34, y + 54);
-  p.noStroke();
-  p.fill(COL.muted);
-  const xe = x0 + ACTIVITY.length * w - 34;
-  p.triangle(xe, y + 54, xe - 8, y + 50, xe - 8, y + 58);
+  arrow(p, x0 + 40, y + 54, x0 + ACTIVITY.length * w - 34, y + 54, COL.muted, { weight: 1.5, head: 8 });
   labelBox(p, 400, y + 54, 'mức độ hoạt động hóa học giảm dần', COL.muted, 12);
 }

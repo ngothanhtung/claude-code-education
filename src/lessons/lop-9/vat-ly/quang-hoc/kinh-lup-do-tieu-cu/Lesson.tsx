@@ -45,18 +45,13 @@ function fix(q: Params): Params {
 export default function KinhLupLesson() {
   const ex = useExercises(EXERCISES, fix);
   const q = ex.params;
-  const sim = useSimulation({ total: q.mode === 'kinhlup' ? 3 : 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: q.mode === 'kinhlup' ? 3 : 1, defaultDuration: 5, resetOn: ex.params });
   const show = sim.revealed;
 
   if (q.mode === 'kinhlup') {
     const G = 25 / q.f;
     const img = computeImage('hoitu', q.f, q.d, 1);
     const dp = img.dp ?? 0;
-    const eq = (x: number) => (isExact(x) ? '=' : '≈');
     const draw = (p: p5) => drawMagnifier(p, { f: q.f, d: q.d, t: sim.t, G });
     return (
       <LessonLayout
@@ -78,13 +73,13 @@ export default function KinhLupLesson() {
           { label: 'Số bội giác G', value: show ? `${fmt(G)}x` : '?', tone: 'b' },
           { label: "Chiều cao ảnh h'", value: show ? `${fmt(img.hp)} cm` : '?' },
         ]}
-        mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(m) => update({ mode: m })} />}
+        mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(m) => ex.edit({ mode: m })} />}
         fields={
           <>
             <RangeField id="f" label="Tiêu cự kính lúp" tone="t" min={2.5} max={12.5} step={2.5}
-              value={q.f} display={`${fmt(q.f)} cm`} onChange={(v) => update({ f: v })} />
+              value={q.f} display={`${fmt(q.f)} cm`} onChange={(v) => ex.edit({ f: v })} />
             <RangeField id="d" label="Khoảng cách vật" tone="a" min={0.5} max={12} step={0.5}
-              value={q.d} display={`${fmt(q.d)} cm`} onChange={(v) => update({ d: v })} />
+              value={q.d} display={`${fmt(q.d)} cm`} onChange={(v) => ex.edit({ d: v })} />
           </>
         }
         solution={
@@ -154,16 +149,16 @@ export default function KinhLupLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(m) => update({ mode: m })} />
-          <Segmented name="lens" legend="Dụng cụ" options={LENS_OPTIONS} value={q.lens} onChange={(l) => update({ lens: l })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(m) => ex.edit({ mode: m })} />
+          <Segmented name="lens" legend="Dụng cụ" options={LENS_OPTIONS} value={q.lens} onChange={(l) => ex.edit({ lens: l })} />
         </>
       }
       fields={
         <>
           <RangeField id="bd" label="Khoảng cách vật – thấu kính" tone="a" min={8} max={50} step={1}
-            value={q.bd} display={`${q.bd} cm`} onChange={(v) => update({ bd: v })} />
+            value={q.bd} display={`${q.bd} cm`} onChange={(v) => ex.edit({ bd: v })} />
           <RangeField id="bdp" label="Khoảng cách thấu kính – màn" tone="b" min={8} max={55} step={1}
-            value={q.bdp} display={`${q.bdp} cm`} onChange={(v) => update({ bdp: v })} />
+            value={q.bdp} display={`${q.bdp} cm`} onChange={(v) => ex.edit({ bdp: v })} />
         </>
       }
       solution={

@@ -8,7 +8,7 @@ import { B, D, N as TN } from '@/lib/tex';
 import { useExercises } from '@/hooks/useExercises';
 import { EXERCISES } from './exercises';
 import { useSimulation } from '@/hooks/useSimulation';
-import { deg, fmt } from '@/lib/format';
+import { deg } from '@/lib/format';
 import { SPECTRUM, drawPrism, tracePrism } from './sketch';
 
 type Light = 'don' | 'trang';
@@ -29,11 +29,7 @@ const N = 1.5;
 export default function LangKinhLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 3, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 3, defaultDuration: 5, resetOn: ex.params });
 
   const white = q.light === 'trang';
   const tr = tracePrism(q.A, N, q.i1);
@@ -121,14 +117,14 @@ export default function LangKinhLesson() {
         { label: 'Chiết suất', value: white ? '1,47 → 1,56' : '1,5', sub: white ? 'đỏ → tím (phóng đại)' : 'thủy tinh' },
       ]}
       mode={
-        <Segmented name="light" legend="Dạng đề" options={LIGHT_OPTIONS} value={q.light} onChange={(l) => update({ light: l })} />
+        <Segmented name="light" legend="Dạng đề" options={LIGHT_OPTIONS} value={q.light} onChange={(l) => ex.edit({ light: l })} />
       }
       fields={
         <>
           <RangeField id="A" label="Góc chiết quang A" tone="t" min={30} max={75} step={5}
-            value={q.A} display={`${q.A}°`} onChange={(v) => update({ A: v })} />
+            value={q.A} display={`${q.A}°`} onChange={(v) => ex.edit({ A: v })} />
           <RangeField id="i1" label="Góc tới" tone="a" min={20} max={80} step={1}
-            value={q.i1} display={`${q.i1}°`} onChange={(v) => update({ i1: v })} />
+            value={q.i1} display={`${q.i1}°`} onChange={(v) => ex.edit({ i1: v })} />
         </>
       }
       solution={solution}

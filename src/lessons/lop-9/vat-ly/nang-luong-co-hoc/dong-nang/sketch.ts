@@ -1,6 +1,6 @@
 import type p5 from 'p5';
 import { COL } from '@/lib/draw/colors';
-import { caption, clamp01, ease, lerp } from '@/lib/draw/geometry';
+import { arrow, arrowHead, caption, clamp01, ease, lerp } from '@/lib/draw/geometry';
 import { dashedLine, drawPaper, labelBox } from '@/lib/draw/scene';
 import { drawCar, drawMoto } from '@/lib/draw/vehicles';
 import { contactShadow, shadedSphere } from '@/lib/draw/fx';
@@ -67,12 +67,7 @@ export function drawKinetic(p: p5, s: KineticScene) {
   // mũi tên vận tốc khi vật đang lao tới
   if (s.t < 1) {
     const y = FLOOR - 74;
-    p.stroke(COL.aText);
-    p.strokeWeight(3);
-    p.line(x - 10, y, x + 50, y);
-    p.noStroke();
-    p.fill(COL.aText);
-    p.triangle(x + 50, y - 6, x + 50, y + 6, x + 60, y);
+    arrow(p, x - 10, y, x + 60, y, COL.aText);
     labelBox(p, x + 112, y, `v = ${s.vText}`, COL.aText, 13);
   }
 
@@ -85,9 +80,7 @@ export function drawKinetic(p: p5, s: KineticScene) {
     p.strokeWeight(2);
     p.line(BLOCK_X, y, bx, y);
     if (bx - BLOCK_X > 30) {
-      p.noStroke();
-      p.fill(COL.ink);
-      p.triangle(bx, y, bx - 8, y - 5, bx - 8, y + 5);
+      arrowHead(p, bx, y, 0, COL.ink, 8, 5);
       labelBox(p, (BLOCK_X + bx) / 2, y + 20, 'khúc gỗ bị đẩy đi', COL.ink, 12);
     }
   }
@@ -136,7 +129,7 @@ function drawEnergyBar(p: p5, s: KineticScene) {
   p.textStyle(p.BOLD);
   p.text('Động năng Wđ', x0 - 12, y + 9);
   p.textStyle(p.NORMAL);
-  p.fill('#EEF1F7');
+  p.fill(COL.track);
   p.rect(x0, y, w, 18, 9);
   // động năng của vật lúc lao tới (trước khi va chạm)
   const full = Math.max(0.04, Math.sqrt(clamp01(s.ratio)));

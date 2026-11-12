@@ -53,9 +53,9 @@ export function drawOrganic(p: p5, s: OrganicScene) {
     const x = x0 + i * 74;
     const h = (maxH * part.pct * barsK) / 100;
     p.noStroke();
-    p.fill('#EEF1F7');
+    p.fill(COL.track);
     p.rect(x, base - maxH, 50, maxH, 4);
-    p.fill(part.el === 'H' ? '#C9D3EA' : ATOM_COL[part.el]);
+    p.fill(part.el === 'H' ? COL.inkLine : ATOM_COL[part.el]);
     p.rect(x, base - h, 50, h, 4);
     p.fill(COL.text);
     p.textSize(16);

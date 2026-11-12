@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
 import { Num, RangeField, Segmented } from '@/components/Controls';
 import { Answer, Calc, ConvLine, MinutesLine, Step } from '@/components/Notebook';
 import { B, N, U, ap, eq, u } from '@/lib/tex';
+import { useParams } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
 import { durationAns, fmt, hm, isExact, round2 } from '@/lib/format';
 import { drawNguoc } from './sketch';
@@ -27,7 +27,7 @@ const MODE_OPTIONS = [
 ] as const;
 
 export default function NguocChieuLesson() {
-  const [params, setParams] = useState<Params>({ mode: 'same', S: 120, vA: 40, vB: 60, d: 1 });
+  const { params, edit } = useParams<Params>({ mode: 'same', S: 120, vA: 40, vB: 60, d: 1 });
   const { mode, S, vA, vB, d } = params;
 
   const lead = mode === 'lead' ? d : 0;
@@ -35,11 +35,7 @@ export default function NguocChieuLesson() {
   const meetT = (S + vB * lead) / (vA + vB); // tính từ lúc ô tô đỏ đi
   const answerT = meetT - lead; // tính từ lúc ô tô xanh đi
 
-  const sim = useSimulation({ total: meetT, enabled: valid });
-  const update = (patch: Partial<Params>) => {
-    setParams((prev) => ({ ...prev, ...patch }));
-    sim.reset();
-  };
+  const sim = useSimulation({ total: meetT, enabled: valid, resetOn: params });
 
   const t = sim.t;
   const show = sim.revealed;
@@ -159,18 +155,18 @@ export default function NguocChieuLesson() {
         { label: 'Hai xe còn cách nhau', value: `${fmt(Math.max(S - sA - sB, 0), 1)} km` },
       ]}
       mode={
-        <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={mode} onChange={(m) => update({ mode: m })} />
+        <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={mode} onChange={(m) => edit({ mode: m })} />
       }
       fields={
         <>
           <RangeField id="sS" label="Quãng đường AB" tone="t" min={50} max={300} step={10}
-            value={S} display={`${S} km`} onChange={(v) => update({ S: v })} />
+            value={S} display={`${S} km`} onChange={(v) => edit({ S: v })} />
           <RangeField id="sA" label="Vận tốc ô tô đỏ" tone="a" min={10} max={120} step={5}
-            value={vA} display={`${vA} km/giờ`} onChange={(v) => update({ vA: v })} />
+            value={vA} display={`${vA} km/giờ`} onChange={(v) => edit({ vA: v })} />
           <RangeField id="sB" label="Vận tốc ô tô xanh" tone="b" min={10} max={120} step={5}
-            value={vB} display={`${vB} km/giờ`} onChange={(v) => update({ vB: v })} />
+            value={vB} display={`${vB} km/giờ`} onChange={(v) => edit({ vB: v })} />
           <RangeField id="sD" label="Ô tô đỏ đi trước" tone="t" min={0.5} max={3} step={0.5}
-            value={d} display={hm(d)} onChange={(v) => update({ d: v })} hidden={mode !== 'lead'} />
+            value={d} display={hm(d)} onChange={(v) => edit({ d: v })} hidden={mode !== 'lead'} />
         </>
       }
       solution={solution}

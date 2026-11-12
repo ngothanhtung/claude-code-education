@@ -29,11 +29,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export default function ThauKinhLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 3, defaultDuration: 6 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 3, defaultDuration: 6, resetOn: ex.params });
 
   const img = computeImage(q.type, q.f, q.d, q.h);
   const nature = describeImage(q.type, q.f, q.d, img);
@@ -130,16 +126,16 @@ export default function ThauKinhLesson() {
         { label: "Chiều cao ảnh h'", value: show && img.dp !== null ? `${fmt(img.hp)} cm` : img.dp === null ? '–' : '?', tone: 'b' },
       ]}
       mode={
-        <Segmented name="type" legend="Dạng đề" options={TYPE_OPTIONS} value={q.type} onChange={(t) => update({ type: t })} />
+        <Segmented name="type" legend="Dạng đề" options={TYPE_OPTIONS} value={q.type} onChange={(t) => ex.edit({ type: t })} />
       }
       fields={
         <>
           <RangeField id="f" label="Tiêu cự f" tone="t" min={5} max={20} step={1}
-            value={q.f} display={`${q.f} cm`} onChange={(v) => update({ f: v })} />
+            value={q.f} display={`${q.f} cm`} onChange={(v) => ex.edit({ f: v })} />
           <RangeField id="d" label="Khoảng cách vật d" tone="a" min={2} max={50} step={1}
-            value={q.d} display={`${q.d} cm`} onChange={(v) => update({ d: v })} />
+            value={q.d} display={`${q.d} cm`} onChange={(v) => ex.edit({ d: v })} />
           <RangeField id="h" label="Chiều cao vật" tone="a" min={1} max={5} step={0.5}
-            value={q.h} display={`${fmt(q.h)} cm`} onChange={(v) => update({ h: v })} />
+            value={q.h} display={`${fmt(q.h)} cm`} onChange={(v) => ex.edit({ h: v })} />
         </>
       }
       solution={solution}

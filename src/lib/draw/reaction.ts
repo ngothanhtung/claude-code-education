@@ -1,7 +1,7 @@
 import type p5 from 'p5';
 import { cu, type Reaction } from '@/lib/chem';
 import { COL } from './colors';
-import { caption, clamp01 } from './geometry';
+import { arrowHead, caption, clamp01 } from './geometry';
 import { amountBar } from './lab';
 import { drawReaction } from './molecule';
 import { drawPaper, labelBox } from './scene';
@@ -96,17 +96,15 @@ export function drawFlow(p: p5, steps: FlowStep[], arrows: string[], k: number, 
       const ax = x + bw + 8;
       const bx = x + bw + gap - 8;
       const on = clamp01(k * (n - 1) - i);
-      p.stroke(on > 0 ? COL.ink : '#C9D3EA');
+      p.stroke(on > 0 ? COL.ink : COL.inkLine);
       p.strokeWeight(3);
       p.line(ax, y, ax + (bx - ax) * Math.max(on, 0.001), y);
       if (on >= 1) {
-        p.noStroke();
-        p.fill(COL.ink);
-        p.triangle(bx, y, bx - 10, y - 6, bx - 10, y + 6);
+        arrowHead(p, bx, y, 0, COL.ink);
       }
       if (arrows[i]) {
         // nhãn dưới hàng khối, có vạch nối lên mũi tên
-        p.stroke('#C9D3EA');
+        p.stroke(COL.inkLine);
         p.strokeWeight(1.5);
         p.line((ax + bx) / 2, y + 6, (ax + bx) / 2, y + 74 + (i % 2) * 26);
         p.noStroke();

@@ -3,7 +3,7 @@
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
 import Molecule3D from '@/components/Molecule3D';
-import { Num, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -41,8 +41,8 @@ const MODE_OPTIONS = [
 
 const MOL_OPTIONS = (Object.keys(MOLS) as MolId[]).map((k) => ({ value: k, label: cu(MOLS[k].display) }));
 
-const LABELS: PlayLabels = { start: 'Lắp phân tử', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Lắp lại' };
-const LABELS_CT: PlayLabels = { start: 'Tìm công thức', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
+const LABELS = playLabels('Lắp phân tử', 'Tiếp tục', 'Lắp lại');
+const LABELS_CT = playLabels('Tìm công thức');
 
 const EL_NAME: Record<string, string> = { C: 'carbon', H: 'hydrogen', O: 'oxygen' };
 
@@ -52,11 +52,7 @@ const MOL3D_OF: Record<MolId, Mol3DId> = { CH4: 'methane', C2H6: 'ethane', C3H8:
 export default function HopChatHuuCoLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 6 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 6, resetOn: ex.params });
 
   const show = sim.revealed;
   const ctpt = q.mode === 'ctpt';
@@ -166,8 +162,8 @@ export default function HopChatHuuCoLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          <Segmented name="mol" legend="Chất" options={MOL_OPTIONS} value={q.mol} onChange={(v) => update({ mol: v })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          <Segmented name="mol" legend="Chất" options={MOL_OPTIONS} value={q.mol} onChange={(v) => ex.edit({ mol: v })} />
         </>
       }
       fields={null}

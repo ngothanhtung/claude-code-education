@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -69,16 +69,12 @@ function fix(q: Params): Params {
   return METALS_OF[q.mode].includes(q.metal) ? q : { ...q, metal: METALS_OF[q.mode][0] };
 }
 
-const LABELS: PlayLabels = { start: 'Cho phản ứng', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại thí nghiệm' };
+const LABELS = playLabels('Cho phản ứng', 'Tiếp tục', 'Làm lại thí nghiệm');
 
 export default function TinhChatKimLoaiLesson() {
   const ex = useExercises(EXERCISES, fix);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 6 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 6, resetOn: ex.params });
 
   const show = sim.revealed;
   const { r, product, gas } = reactionOf(q);
@@ -158,17 +154,17 @@ export default function TinhChatKimLoaiLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
           <Segmented name="metal" legend="Kim loại" options={METALS_OF[q.mode].map((x) => ({ value: x, label: x }))}
-            value={q.metal} onChange={(v) => update({ metal: v })} />
+            value={q.metal} onChange={(v) => ex.edit({ metal: v })} />
           {q.mode === 'acid' && (
-            <Segmented name="acid" legend="Dung dịch acid" options={ACID_OPTIONS} value={q.acid} onChange={(v) => update({ acid: v })} />
+            <Segmented name="acid" legend="Dung dịch acid" options={ACID_OPTIONS} value={q.acid} onChange={(v) => ex.edit({ acid: v })} />
           )}
         </>
       }
       fields={
         <RangeField id="m" label={`Khối lượng ${q.metal}`} tone="a" min={0.1} max={30} step={0.1}
-          value={q.m} display={`${fmt(q.m)} g`} onChange={(x) => update({ m: x })} />
+          value={q.m} display={`${fmt(q.m)} g`} onChange={(x) => ex.edit({ m: x })} />
       }
       solution={solution}
       rules={[

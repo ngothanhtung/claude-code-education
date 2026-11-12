@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { B, N, T, U, UN, u } from '@/lib/tex';
 
@@ -19,16 +19,12 @@ export interface Params {
   H: number; // hiệu suất %
 }
 
-const LABELS: PlayLabels = { start: 'Mở cửa đập', pause: 'Tạm dừng', resume: 'Chạy tiếp', again: 'Chạy lại' };
+const LABELS = playLabels('Mở cửa đập', 'Chạy tiếp', 'Chạy lại');
 
 export default function ThuyDienLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 7 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 7, resetOn: ex.params });
 
   const m = 1000 * q.V; // kg mỗi giây
   const A = 10 * m * q.h; // J mỗi giây
@@ -85,11 +81,11 @@ export default function ThuyDienLesson() {
       fields={
         <>
           <RangeField id="h" label="Độ chênh mực nước" tone="t" min={10} max={200} step={10}
-            value={q.h} display={`${q.h} m`} onChange={(v) => update({ h: v })} />
+            value={q.h} display={`${q.h} m`} onChange={(v) => ex.edit({ h: v })} />
           <RangeField id="V" label="Nước chảy mỗi giây" tone="b" min={1} max={50} step={1}
-            value={q.V} display={`${q.V} m³`} onChange={(v) => update({ V: v })} />
+            value={q.V} display={`${q.V} m³`} onChange={(v) => ex.edit({ V: v })} />
           <RangeField id="H" label="Hiệu suất" tone="a" min={50} max={95} step={5}
-            value={q.H} display={`${q.H}%`} onChange={(v) => update({ H: v })} />
+            value={q.H} display={`${q.H}%`} onChange={(v) => ex.edit({ H: v })} />
         </>
       }
       solution={solution}

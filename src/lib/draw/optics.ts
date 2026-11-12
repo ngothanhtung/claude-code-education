@@ -1,5 +1,6 @@
 import type p5 from 'p5';
 import { COL } from './colors';
+import { arrowHead } from './geometry';
 
 /**
  * Hình học tia sáng trên mặt phẳng (tọa độ màn hình, y hướng xuống).
@@ -65,13 +66,7 @@ export function intersectLines(pt: V, u: V, q: V, v: V): V | null {
 /** Mũi tên nhỏ chỉ chiều truyền ở giữa đoạn */
 function arrowAt(p: p5, at: V, dir: V, col: string, size = 9) {
   const d = unit(dir);
-  const nrm: V = [-d[1], d[0]];
-  const tip = add(at, mul(d, size / 2));
-  const b1 = add(sub(at, mul(d, size / 2)), mul(nrm, size / 2));
-  const b2 = sub(sub(at, mul(d, size / 2)), mul(nrm, size / 2));
-  p.noStroke();
-  p.fill(col);
-  p.triangle(tip[0], tip[1], b1[0], b1[1], b2[0], b2[1]);
+  arrowHead(p, at[0] + (d[0] * size) / 2, at[1] + (d[1] * size) / 2, Math.atan2(d[1], d[0]), col, size, size / 2);
 }
 
 export interface RayStyle {

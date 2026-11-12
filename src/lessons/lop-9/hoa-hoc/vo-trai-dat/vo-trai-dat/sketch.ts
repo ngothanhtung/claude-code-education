@@ -43,7 +43,7 @@ export function drawCrust(p: p5, s: CrustScene) {
     p.textStyle(p.BOLD);
     p.fill(hi ? COL.aText : COL.text);
     p.text(el, x0 - 12, y + 10);
-    p.fill('#EEF1F7');
+    p.fill(COL.track);
     p.rect(x0, y, maxW, 20, 6);
     p.fill(hi ? COL.a : el === 'O' || el === 'Si' ? COL.ink : '#9AA3B5');
     p.rect(x0, y, (maxW * v) / 46.6, 20, 6);
@@ -61,7 +61,7 @@ export function drawCrust(p: p5, s: CrustScene) {
   const bw = 300;
   const by = 140;
   p.noStroke();
-  p.fill('#EEF1F7');
+  p.fill(COL.track);
   p.rect(cx - bw / 2, by, bw, 46, 8);
   p.fill(COL.a);
   p.rect(cx - bw / 2, by, (bw * s.pct * k) / 100, 46, 8);

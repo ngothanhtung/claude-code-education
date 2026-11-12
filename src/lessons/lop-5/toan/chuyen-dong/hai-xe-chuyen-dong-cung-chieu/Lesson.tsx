@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
 import { Num, RangeField, Segmented } from '@/components/Controls';
 import { Answer, Calc, ConvLine, MinutesLine, Step } from '@/components/Notebook';
 import { B, N, U, ap, eq, u } from '@/lib/tex';
+import { useParams } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
 import { durationAns, fmt, hm, isExact, niceLength, round2 } from '@/lib/format';
 import { drawCung } from './sketch';
@@ -26,7 +26,7 @@ const MODE_OPTIONS = [
 ] as const;
 
 export default function CungChieuLesson() {
-  const [params, setParams] = useState<Params>({ mode: 'late', v1: 40, t0: 3, g: 48, v2: 60 });
+  const { params, edit } = useParams<Params>({ mode: 'late', v1: 40, t0: 3, g: 48, v2: 60 });
   const { mode, v1, t0, g, v2 } = params;
 
   const delay = mode === 'late' ? t0 : 0; // ô tô chờ bao lâu
@@ -39,11 +39,7 @@ export default function CungChieuLesson() {
   const meetDist = v2 * catchTime;
   const L = niceLength(valid ? meetDist * 1.15 : Math.max(headStart, 10) * 3);
 
-  const sim = useSimulation({ total: meetHour, enabled: valid });
-  const update = (patch: Partial<Params>) => {
-    setParams((prev) => ({ ...prev, ...patch }));
-    sim.reset();
-  };
+  const sim = useSimulation({ total: meetHour, enabled: valid, resetOn: params });
 
   const t = sim.t;
   const show = sim.revealed;
@@ -146,18 +142,18 @@ export default function CungChieuLesson() {
         { label: 'Hai xe cách nhau', value: `${fmt(Math.max(sMoto - sCar, 0), 1)} km` },
       ]}
       mode={
-        <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={mode} onChange={(m) => update({ mode: m })} />
+        <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={mode} onChange={(m) => edit({ mode: m })} />
       }
       fields={
         <>
           <RangeField id="sV1" label="Vận tốc xe máy" tone="b" min={20} max={60} step={5}
-            value={v1} display={`${v1} km/giờ`} onChange={(v) => update({ v1: v })} />
+            value={v1} display={`${v1} km/giờ`} onChange={(v) => edit({ v1: v })} />
           <RangeField id="sT0" label="Xe máy đi trước" tone="t" min={0.5} max={5} step={0.5}
-            value={t0} display={hm(t0)} onChange={(v) => update({ t0: v })} hidden={mode !== 'late'} />
+            value={t0} display={hm(t0)} onChange={(v) => edit({ t0: v })} hidden={mode !== 'late'} />
           <RangeField id="sG" label="Quãng đường AB" tone="t" min={10} max={150} step={2}
-            value={g} display={`${g} km`} onChange={(v) => update({ g: v })} hidden={mode !== 'gap'} />
+            value={g} display={`${g} km`} onChange={(v) => edit({ g: v })} hidden={mode !== 'gap'} />
           <RangeField id="sV2" label="Vận tốc ô tô" tone="a" min={30} max={120} step={5}
-            value={v2} display={`${v2} km/giờ`} onChange={(v) => update({ v2: v })} />
+            value={v2} display={`${v2} km/giờ`} onChange={(v) => edit({ v2: v })} />
         </>
       }
       solution={solution}

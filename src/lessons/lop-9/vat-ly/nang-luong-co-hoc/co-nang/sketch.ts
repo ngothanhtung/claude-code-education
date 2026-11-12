@@ -1,6 +1,7 @@
 import type p5 from 'p5';
 import { COL } from '@/lib/draw/colors';
-import { caption } from '@/lib/draw/geometry';
+import { energyBars } from '@/lib/draw/energy';
+import { arrow, caption } from '@/lib/draw/geometry';
 import { dashedLine, drawPaper, labelBox } from '@/lib/draw/scene';
 import { contactShadow, shadedSphere } from '@/lib/draw/fx';
 import { fmt, fmtG } from '@/lib/format';
@@ -69,12 +70,7 @@ export function drawFall(p: p5, s: FallScene) {
   const yb = yOf(s.h) - 14;
   if (s.v > 0.01) {
     const L = Math.min(80, 6 * s.v);
-    p.stroke(COL.aText);
-    p.strokeWeight(3);
-    p.line(BALL_X, yb + 16, BALL_X, yb + 16 + L);
-    p.noStroke();
-    p.fill(COL.aText);
-    p.triangle(BALL_X - 6, yb + 16 + L - 2, BALL_X + 6, yb + 16 + L - 2, BALL_X, yb + 16 + L + 8);
+    arrow(p, BALL_X, yb + 16, BALL_X, yb + 16 + L + 8, COL.aText);
     labelBox(p, BALL_X + 52, yb + 16 + L / 2, `v = ${fmt(s.v, 1)} m/s`, COL.aText, 12);
   }
   // quả cầu có khối như bài Động năng; bóng trên mặt đất đậm và gọn dần khi vật rơi xuống gần
@@ -94,36 +90,25 @@ export function drawFall(p: p5, s: FallScene) {
 function drawBars(p: p5, W: number, Wt: number, Wd: number) {
   const base = 420;
   const maxH = 280;
-  const bars: [string, number, string, string][] = [
-    ['Wt', Wt, COL.b, COL.bText],
-    ['Wđ', Wd, COL.a, COL.aText],
-    ['W', W, COL.ink, COL.ink],
-  ];
-  p.noStroke();
-  p.fill(COL.text);
-  p.textAlign(p.CENTER, p.CENTER);
-  p.textSize(15);
-  p.textStyle(p.BOLD);
-  p.text('Năng lượng (J)', 600, 92);
-  bars.forEach(([name, val, col, textCol], i) => {
-    const x = 480 + i * 90;
-    const h = W > 0 ? (maxH * val) / W : 0;
-    p.noStroke();
-    p.fill('#EEF1F7');
-    p.rect(x, base - maxH, 56, maxH, 4);
-    p.fill(col);
-    p.rect(x, base - h, 56, h, 4);
-    p.fill(textCol);
-    p.textSize(16);
-    p.textStyle(p.BOLD);
-    p.text(name, x + 28, base + 18);
-    p.textSize(14);
-    p.text(fmtG(val, 1), x + 28, base - h - 14);
+  energyBars(p, {
+    title: 'Năng lượng (J)',
+    titleY: 92,
+    bars: [
+      { name: 'Wt', value: Wt, col: COL.b, textCol: COL.bText },
+      { name: 'Wđ', value: Wd, col: COL.a, textCol: COL.aText },
+      { name: 'W', value: W, col: COL.ink },
+    ],
+    cx: 508,
+    step: 90,
+    base,
+    maxH,
+    max: W,
+    nameSize: 16,
   });
   dashedLine(p, 470, base - maxH, 740, base - maxH, COL.muted, 1.2, [4, 4]);
   p.noStroke();
   p.fill(COL.muted);
+  p.textAlign(p.CENTER, p.CENTER);
   p.textSize(13);
-  p.textStyle(p.NORMAL);
   p.text('Wt + Wđ = W luôn không đổi', 610, base + 46);
 }

@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -42,16 +42,12 @@ const SPEED: Record<string, number> = { Mg: 1, Al: 0.7, Zn: 0.6, Fe: 0.4, Cu: 0.
 /** màu dung dịch muối theo kim loại của muối */
 const SALT_COL: Record<string, string> = { Cu: '#7FB5E6', Fe: '#CFE7C9' };
 
-const LABELS: PlayLabels = { start: 'Nhúng thanh kim loại', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại thí nghiệm' };
+const LABELS = playLabels('Nhúng thanh kim loại', 'Tiếp tục', 'Làm lại thí nghiệm');
 
 export default function DayHoatDongLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 6 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 6, resetOn: ex.params });
 
   const show = sim.revealed;
   const sol = SOLUTIONS[q.sol];
@@ -148,13 +144,13 @@ export default function DayHoatDongLesson() {
       ]}
       mode={
         <>
-          <Segmented name="metal" legend="Kim loại" options={METAL_OPTIONS} value={q.metal} onChange={(v) => update({ metal: v })} />
-          <Segmented name="sol" legend="Dung dịch" options={SOL_OPTIONS} value={q.sol} onChange={(v) => update({ sol: v })} />
+          <Segmented name="metal" legend="Kim loại" options={METAL_OPTIONS} value={q.metal} onChange={(v) => ex.edit({ metal: v })} />
+          <Segmented name="sol" legend="Dung dịch" options={SOL_OPTIONS} value={q.sol} onChange={(v) => ex.edit({ sol: v })} />
         </>
       }
       fields={
         <RangeField id="m" label={`Khối lượng ${q.metal}`} tone="a" min={0.1} max={30} step={0.1}
-          value={q.m} display={`${fmt(q.m)} g`} onChange={(x) => update({ m: x })} />
+          value={q.m} display={`${fmt(q.m)} g`} onChange={(x) => ex.edit({ m: x })} />
       }
       solution={solution}
       rules={[

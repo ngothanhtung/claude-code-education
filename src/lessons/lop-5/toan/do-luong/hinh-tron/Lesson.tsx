@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels, type PlayLabels } from '@/components/Controls';
 import { Answer, Calc, Step } from '@/components/Notebook';
 import { B, N, U, UN, u } from '@/lib/tex';
+import { useParams } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
 import { fmt } from '@/lib/format';
 import { drawCircle } from './sketch';
@@ -31,25 +31,21 @@ const GIVEN_OPTIONS = [
 ] as const;
 
 const LABELS: Record<Mode, PlayLabels> = {
-  chuvi: { start: 'Lăn hình tròn', pause: 'Tạm dừng', resume: 'Lăn tiếp', again: 'Xem lại' },
-  dientich: { start: 'Cắt hình tròn', pause: 'Tạm dừng', resume: 'Xếp tiếp', again: 'Xem lại' },
+  chuvi: playLabels('Lăn hình tròn', 'Lăn tiếp', 'Xem lại'),
+  dientich: playLabels('Cắt hình tròn', 'Xếp tiếp', 'Xem lại'),
 };
 
 /** Làm tròn bỏ sai số dấu phẩy động (kết quả nhân với 3,14 có tối đa 4 chữ số thập phân) */
 const clean = (x: number) => Math.round(x * 10000) / 10000;
 
 export default function HinhTronLesson() {
-  const [params, setParams] = useState<Params>({ mode: 'chuvi', given: 'd', r: 2.5 });
+  const { params, edit } = useParams<Params>({ mode: 'chuvi', given: 'd', r: 2.5 });
   const { mode, given, r } = params;
   const d = 2 * r;
   const C = clean(d * 3.14);
   const S = clean(r * r * 3.14);
 
-  const sim = useSimulation({ total: mode === 'chuvi' ? 2 : 3, defaultDuration: 7 });
-  const update = (patch: Partial<Params>) => {
-    setParams((prev) => ({ ...prev, ...patch }));
-    sim.reset();
-  };
+  const sim = useSimulation({ total: mode === 'chuvi' ? 2 : 3, defaultDuration: 7, resetOn: params });
 
   const show = sim.revealed;
   const draw = (p: p5) => drawCircle(p, { mode, given, r, C, S, t: sim.t, done: sim.done });
@@ -121,17 +117,17 @@ export default function HinhTronLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Cần tìm" options={MODE_OPTIONS} value={mode} onChange={(m) => update({ mode: m })} />
-          <Segmented name="given" legend="Đề cho" options={GIVEN_OPTIONS} value={given} onChange={(g) => update({ given: g })} />
+          <Segmented name="mode" legend="Cần tìm" options={MODE_OPTIONS} value={mode} onChange={(m) => edit({ mode: m })} />
+          <Segmented name="given" legend="Đề cho" options={GIVEN_OPTIONS} value={given} onChange={(g) => edit({ given: g })} />
         </>
       }
       fields={
         given === 'r' ? (
           <RangeField id="sR" label="Bán kính" tone="t" min={1} max={10} step={0.5}
-            value={r} display={`${fmt(r)} cm`} onChange={(v) => update({ r: v })} />
+            value={r} display={`${fmt(r)} cm`} onChange={(v) => edit({ r: v })} />
         ) : (
           <RangeField id="sD" label="Đường kính" tone="b" min={2} max={20} step={1}
-            value={d} display={`${fmt(d)} cm`} onChange={(v) => update({ r: v / 2 })} />
+            value={d} display={`${fmt(d)} cm`} onChange={(v) => edit({ r: v / 2 })} />
         )
       }
       solution={solution}

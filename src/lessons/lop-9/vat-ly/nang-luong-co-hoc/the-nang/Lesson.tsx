@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { EXERCISES } from './exercises';
@@ -38,16 +38,12 @@ function fix(q: Params): Params {
   return q.mode === 'moc' && q.h <= q.hb ? { ...q, h: Math.ceil((q.hb + 0.1) * 2) / 2 } : q;
 }
 
-const LABELS: PlayLabels = { start: 'Nâng vật', pause: 'Tạm dừng', resume: 'Nâng tiếp', again: 'Nâng lại' };
+const LABELS = playLabels('Nâng vật', 'Nâng tiếp', 'Nâng lại');
 
 export default function TheNangLesson() {
   const ex = useExercises(EXERCISES, fix);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 4 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 4, resetOn: ex.params });
 
   const show = sim.revealed;
   const moc = q.mode === 'moc';
@@ -178,17 +174,17 @@ export default function TheNangLesson() {
         { label: moc ? 'Thế năng (mốc sàn)' : 'Thế năng', value: hide(q.mode === 'W' || moc, `${fmtG(W)} J`), tone: 'b' },
         ...(moc ? [{ label: 'Thế năng (mốc mặt bàn)', value: hide(true, `${fmtG(W2)} J`) }] : []),
       ]}
-      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />}
+      mode={<Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />}
       fields={
         <>
           <RangeField id="m" label="Khối lượng" tone="a" min={0.5} max={50} step={0.5}
-            value={q.m} display={`${fmtG(q.m)} kg`} onChange={(x) => update({ m: x })} hidden={q.mode === 'm'} />
+            value={q.m} display={`${fmtG(q.m)} kg`} onChange={(x) => ex.edit({ m: x })} hidden={q.mode === 'm'} />
           <RangeField id="h" label="Độ cao" tone="t" min={0.5} max={30} step={0.5}
-            value={q.h} display={`${fmt(q.h)} m`} onChange={(x) => update({ h: x })} hidden={q.mode === 'h'} />
+            value={q.h} display={`${fmt(q.h)} m`} onChange={(x) => ex.edit({ h: x })} hidden={q.mode === 'h'} />
           <RangeField id="W" label="Thế năng" tone="b" min={10} max={3000} step={10}
-            value={q.W} display={`${fmtG(q.W)} J`} onChange={(x) => update({ W: x })} hidden={q.mode === 'W' || moc} />
+            value={q.W} display={`${fmtG(q.W)} J`} onChange={(x) => ex.edit({ W: x })} hidden={q.mode === 'W' || moc} />
           <RangeField id="hb" label="Độ cao mặt bàn" tone="b" min={0.5} max={1.5} step={0.1}
-            value={q.hb} display={`${fmt(q.hb)} m`} onChange={(x) => update({ hb: x })} hidden={!moc} />
+            value={q.hb} display={`${fmt(q.hb)} m`} onChange={(x) => ex.edit({ hb: x })} hidden={!moc} />
         </>
       }
       solution={solution}

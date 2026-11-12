@@ -3,7 +3,7 @@
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
 import Molecule3D from '@/components/Molecule3D';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, REACT_LABELS } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
@@ -43,7 +43,6 @@ const MODE_OPTIONS = [
 ] as const;
 const MOL_OPTIONS = (Object.keys(NAMES) as AlkeneId[]).map((k) => ({ value: k, label: cu(k) }));
 
-const LABELS: PlayLabels = { start: 'Cho phản ứng', pause: 'Tạm dừng', resume: 'Tiếp tục', again: 'Làm lại' };
 
 /** Đổi sang dạng chỉ dùng ethylene thì chọn ethylene */
 function fix(q: Params): Params {
@@ -56,11 +55,7 @@ const MOL3D_OF: Record<AlkeneId, Mol3DId> = { C2H4: 'ethylene', C3H6: 'propylene
 export default function AlkeneLesson() {
   const ex = useExercises(EXERCISES, fix);
   const q = ex.params;
-  const sim = useSimulation({ total: 1, defaultDuration: 5 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 1, defaultDuration: 5, resetOn: ex.params });
 
   const show = sim.revealed;
   const e = (x: number) => eq(isExact(x, 4));
@@ -235,21 +230,21 @@ export default function AlkeneLesson() {
       readout={readout}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          {gasModes && <Segmented name="mol" legend="Alkene" options={MOL_OPTIONS} value={q.mol} onChange={(v) => update({ mol: v })} />}
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          {gasModes && <Segmented name="mol" legend="Alkene" options={MOL_OPTIONS} value={q.mol} onChange={(v) => ex.edit({ mol: v })} />}
         </>
       }
       fields={
         <>
           <RangeField id="n" label={q.mode === 'honhop' ? 'Thể tích hỗn hợp' : `Lượng ${cu(q.mol)}`} tone="a" min={0.05} max={2} step={0.05}
             value={q.n} display={q.mode === 'dot' ? `${f4(q.n * molarMass(q.mol))} g` : `${f4(V)} L`}
-            onChange={(x) => update({ n: x })} hidden={q.mode === 'trunghop'} />
+            onChange={(x) => ex.edit({ n: x })} hidden={q.mode === 'trunghop'} />
           <RangeField id="pct" label="Khối lượng Br₂ (theo % C₂H₄)" tone="b" min={5} max={95} step={5}
-            value={q.pct} display={`${f4((q.n * q.pct * 160) / 100)} g`} onChange={(x) => update({ pct: x })} hidden={q.mode !== 'honhop'} />
+            value={q.pct} display={`${f4((q.n * q.pct * 160) / 100)} g`} onChange={(x) => ex.edit({ pct: x })} hidden={q.mode !== 'honhop'} />
           <RangeField id="mass" label="Khối lượng ethylene" tone="a" min={0.5} max={20} step={0.5}
-            value={q.mass} display={`${fmt(q.mass)} tấn`} onChange={(x) => update({ mass: x })} hidden={q.mode !== 'trunghop'} />
+            value={q.mass} display={`${fmt(q.mass)} tấn`} onChange={(x) => ex.edit({ mass: x })} hidden={q.mode !== 'trunghop'} />
           <RangeField id="H" label="Hiệu suất" tone="b" min={50} max={100} step={5}
-            value={q.H} display={`${q.H}%`} onChange={(x) => update({ H: x })} hidden={q.mode !== 'trunghop'} />
+            value={q.H} display={`${q.H}%`} onChange={(x) => ex.edit({ H: x })} hidden={q.mode !== 'trunghop'} />
         </>
       }
       solution={solution}
@@ -259,7 +254,7 @@ export default function AlkeneLesson() {
         { term: 'Nhận biết', text: 'alkene làm mất màu nước bromine, alkane thì không' },
         { term: 'Trùng hợp', text: 'nhiều phân tử ethylene nối thành polyethylene (PE)' },
       ]}
-      playLabels={LABELS}
+      playLabels={REACT_LABELS}
     />
   );
 }

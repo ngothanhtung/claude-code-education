@@ -1,5 +1,6 @@
 import type p5 from 'p5';
 import { COL } from './colors';
+import { arrowHead } from './geometry';
 import { LIGHT, add, drawRay, intersectLines, mul, sub, unit, type V } from './optics';
 import { labelBox, pointLabel } from './scene';
 
@@ -170,8 +171,5 @@ export function arrowUp(p: p5, a: V, b: V, col: string, dashed = false) {
   if (dashed) ctx.setLineDash([6, 5]);
   p.line(a[0], a[1], b[0], b[1]);
   ctx.setLineDash([]);
-  const up = b[1] < a[1] ? 1 : -1;
-  p.noStroke();
-  p.fill(col);
-  p.triangle(b[0], b[1], b[0] - 7, b[1] + 12 * up, b[0] + 7, b[1] + 12 * up);
+  arrowHead(p, b[0], b[1], b[1] < a[1] ? -Math.PI / 2 : Math.PI / 2, col, 12, 7);
 }

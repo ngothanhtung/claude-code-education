@@ -9,6 +9,11 @@ export interface SimulationOptions {
   enabled?: boolean;
   /** Số giây thực để chạy hết mô phỏng ở tốc độ "Vừa" */
   defaultDuration?: number;
+  /**
+   * Số liệu của đề (thường là `ex.params`): đổi giá trị (so bằng `Object.is`) thì mô phỏng tự về đầu
+   * ngay trong lần render đó, nên bài học không cần tự gọi `sim.reset()` sau mỗi lần sửa số liệu.
+   */
+  resetOn?: unknown;
 }
 
 export interface Simulation {
@@ -34,7 +39,7 @@ export interface Simulation {
  * chạy / tạm dừng / làm lại, tự dừng khi đến `total`, tự hiện đáp án khi xong,
  * phím tắt Space (chạy/tạm dừng) và R (làm lại).
  */
-export function useSimulation({ total, enabled = true, defaultDuration = 8 }: SimulationOptions): Simulation {
+export function useSimulation({ total, enabled = true, defaultDuration = 8, resetOn }: SimulationOptions): Simulation {
   const [t, setT] = useState(0);
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(false);
@@ -42,6 +47,17 @@ export function useSimulation({ total, enabled = true, defaultDuration = 8 }: Si
   const [revealed, setRevealed] = useState(false);
   const [duration, setDuration] = useState(defaultDuration);
   const tRef = useRef(0);
+
+  // Đề đổi số liệu: về đầu ngay khi render (mẫu "điều chỉnh state khi prop đổi" của React), không lỡ một khung hình với đáp án cũ
+  const [seen, setSeen] = useState(resetOn);
+  if (!Object.is(seen, resetOn)) {
+    setSeen(resetOn);
+    tRef.current = 0;
+    setT(0);
+    setRunning(false);
+    setDone(false);
+    setRevealed(false);
+  }
 
   // Đổi dạng đề có thể đổi thời lượng mặc định: đưa tốc độ phát về "Vừa"
   useEffect(() => setDuration(defaultDuration), [defaultDuration]);

@@ -2,7 +2,7 @@
 
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
-import { Num, RangeField, Segmented, type PlayLabels } from '@/components/Controls';
+import { Num, RangeField, Segmented, playLabels } from '@/components/Controls';
 import { Answer, Calc, Step, Summary } from '@/components/Notebook';
 import { useExercises } from '@/hooks/useExercises';
 import { EXERCISES } from './exercises';
@@ -33,18 +33,14 @@ const U_OPTIONS: { value: number; label: string }[] = [
   { value: 220, label: '220 V' },
 ];
 
-const LABELS: PlayLabels = { start: 'Bật đèn', pause: 'Tạm dừng', resume: 'Chạy tiếp', again: 'Bật lại' };
+const LABELS = playLabels('Bật đèn', 'Chạy tiếp', 'Bật lại');
 
 const PS = '\\mathscr{P}';
 
 export default function CongSuatDienLesson() {
   const ex = useExercises(EXERCISES);
   const q = ex.params;
-  const sim = useSimulation({ total: 2, defaultDuration: 4 });
-  const update = (patch: Partial<Params>) => {
-    ex.edit(patch);
-    sim.reset();
-  };
+  const sim = useSimulation({ total: 2, defaultDuration: 4, resetOn: ex.params });
 
   const show = sim.revealed;
   const findP = q.mode === 'P';
@@ -105,16 +101,16 @@ export default function CongSuatDienLesson() {
       ]}
       mode={
         <>
-          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => update({ mode: v })} />
-          <Segmented name="U" legend="Hiệu điện thế" options={U_OPTIONS} value={q.U} onChange={(v) => update({ U: v })} />
+          <Segmented name="mode" legend="Dạng đề" options={MODE_OPTIONS} value={q.mode} onChange={(v) => ex.edit({ mode: v })} />
+          <Segmented name="U" legend="Hiệu điện thế" options={U_OPTIONS} value={q.U} onChange={(v) => ex.edit({ U: v })} />
         </>
       }
       fields={
         <>
           <RangeField id="P" label="Số oát ghi trên đèn" tone="a" min={1} max={200} step={1}
-            value={q.P} display={`${fmt(q.P)} W`} onChange={(v) => update({ P: v })} hidden={findP} />
+            value={q.P} display={`${fmt(q.P)} W`} onChange={(v) => ex.edit({ P: v })} hidden={findP} />
           <RangeField id="I" label="Số chỉ ampe kế" tone="b" min={0.1} max={5} step={0.1}
-            value={q.I} display={`${fmt(q.I)} A`} onChange={(v) => update({ I: v })} hidden={!findP} />
+            value={q.I} display={`${fmt(q.I)} A`} onChange={(v) => ex.edit({ I: v })} hidden={!findP} />
         </>
       }
       solution={solution}

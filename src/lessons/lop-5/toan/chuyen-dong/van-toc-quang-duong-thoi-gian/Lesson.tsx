@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import type p5 from 'p5';
 import LessonLayout from '@/components/LessonLayout';
 import { Num, RangeField, Segmented } from '@/components/Controls';
 import { Answer, Calc, ConvLine, MinutesLine, Step } from '@/components/Notebook';
 import { B, N, U, ap, eq, u } from '@/lib/tex';
+import { useParams } from '@/hooks/useExercises';
 import { useSimulation } from '@/hooks/useSimulation';
 import { durationAns, fmt, hm, isExact } from '@/lib/format';
 import { drawVanToc } from './sketch';
@@ -33,13 +33,9 @@ function numbers({ find, s, v, t }: Params) {
 }
 
 export default function VanTocLesson() {
-  const [params, setParams] = useState<Params>({ find: 'v', s: 135, v: 45, t: 3 });
+  const { params, edit } = useParams<Params>({ find: 'v', s: 135, v: 45, t: 3 });
   const { S, T, V } = numbers(params);
-  const sim = useSimulation({ total: T });
-  const update = (patch: Partial<Params>) => {
-    setParams((prev) => ({ ...prev, ...patch }));
-    sim.reset();
-  };
+  const sim = useSimulation({ total: T, resetOn: params });
 
   const { find } = params;
   const hideV = find === 'v' && !sim.done;
@@ -122,16 +118,16 @@ export default function VanTocLesson() {
         { label: 'Quãng đường AB', value: hideS ? '? km' : `${fmt(S, 1)} km` },
       ]}
       mode={
-        <Segmented name="find" legend="Cần tìm" options={FIND_OPTIONS} value={find} onChange={(f) => update({ find: f })} />
+        <Segmented name="find" legend="Cần tìm" options={FIND_OPTIONS} value={find} onChange={(f) => edit({ find: f })} />
       }
       fields={
         <>
           <RangeField id="sS" label="Quãng đường AB" tone="t" min={20} max={300} step={5}
-            value={params.s} display={`${params.s} km`} onChange={(s) => update({ s })} hidden={find === 's'} />
+            value={params.s} display={`${params.s} km`} onChange={(s) => edit({ s })} hidden={find === 's'} />
           <RangeField id="sV" label="Vận tốc ô tô" tone="a" min={10} max={120} step={5}
-            value={params.v} display={`${params.v} km/giờ`} onChange={(v) => update({ v })} hidden={find === 'v'} />
+            value={params.v} display={`${params.v} km/giờ`} onChange={(v) => edit({ v })} hidden={find === 'v'} />
           <RangeField id="sT" label="Thời gian đi" tone="t" min={0.5} max={6} step={0.5}
-            value={params.t} display={hm(params.t)} onChange={(t) => update({ t })} hidden={find === 't'} />
+            value={params.t} display={hm(params.t)} onChange={(t) => edit({ t })} hidden={find === 't'} />
         </>
       }
       solution={solution}

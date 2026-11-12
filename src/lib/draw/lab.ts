@@ -178,7 +178,7 @@ export function amountBar(p: p5, x: number, y: number, w: number, frac: number, 
   p.textSize(14);
   p.textStyle(p.BOLD);
   p.text(label, x - 10, y + 8);
-  p.fill('#EEF1F7');
+  p.fill(COL.track);
   p.rect(x, y, w, 16, 8);
   p.fill(col);
   if (frac > 0) p.rect(x, y, w * Math.min(1, frac), 16, 8);
