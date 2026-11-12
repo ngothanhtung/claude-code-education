@@ -262,3 +262,114 @@ export function pits(p: p5, x: number, w: number, yTop: number, yBot: number, pr
   }
   ctx.restore();
 }
+
+/**
+ * Bóng đổ mềm của vật nằm trên sàn: gradient hình elip, đậm ở điểm tiếp xúc và nhạt dần ra ngoài
+ * (bóng tiếp xúc + vùng tối rộng). w là bề rộng vật, lift > 0 khi vật nhấc khỏi sàn (bóng nhạt và loang hơn).
+ */
+export function contactShadow(p: p5, x: number, floorY: number, w: number, lift = 0) {
+  const ctx = p.drawingContext as Ctx;
+  const k = 1 / (1 + lift / 40);
+  ctx.save();
+  // vùng tối rộng, nhạt, lệch nhẹ sang phải (đèn ở trên bên trái)
+  const rx = w * (0.62 + lift / 200);
+  ctx.translate(x + w * 0.08, floorY);
+  ctx.scale(1, 0.16);
+  let g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+  g.addColorStop(0, `rgba(30,24,60,${0.32 * k})`);
+  g.addColorStop(0.55, `rgba(30,24,60,${0.12 * k})`);
+  g.addColorStop(1, 'rgba(30,24,60,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(0, 0, rx, 0, Math.PI * 2);
+  ctx.fill();
+  // bóng tiếp xúc: nhỏ, đậm, ngay dưới vật
+  const rc = w * 0.26;
+  g = ctx.createRadialGradient(0, 0, 0, 0, 0, rc);
+  g.addColorStop(0, `rgba(20,16,40,${0.5 * k * k})`);
+  g.addColorStop(1, 'rgba(20,16,40,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(-w * 0.08, 0, rc, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/**
+ * Quả cầu có khối: gradient tròn sáng ở trên trái, tối dần về mép dưới phải, ánh phản xạ từ sàn ở mép dưới,
+ * vệt sáng mềm. metal = true cho bi sắt (tương phản mạnh, vệt sáng gắt, phản chiếu nền).
+ * spin (rad) xoay đường may/vân trên quả cầu để thấy vật đang lăn.
+ */
+export function shadedSphere(p: p5, x: number, y: number, r: number, col: string, opts: { metal?: boolean; spin?: number } = {}) {
+  const ctx = p.drawingContext as Ctx;
+  const { metal = false, spin } = opts;
+  ctx.save();
+  // thân cầu
+  const g = ctx.createRadialGradient(x - r * 0.38, y - r * 0.42, r * 0.05, x, y, r * 1.02);
+  if (metal) {
+    g.addColorStop(0, shade(col, 0.85));
+    g.addColorStop(0.25, shade(col, 0.35));
+    g.addColorStop(0.6, shade(col, -0.25));
+    g.addColorStop(0.85, shade(col, -0.55));
+    g.addColorStop(1, shade(col, -0.35));
+  } else {
+    g.addColorStop(0, shade(col, 0.45));
+    g.addColorStop(0.3, shade(col, 0.08));
+    g.addColorStop(0.75, shade(col, -0.25));
+    g.addColorStop(1, shade(col, -0.45));
+  }
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.clip();
+
+  // đường may (bóng) / vân (bi sắt) xoay theo quãng đường lăn: một đường cong qua tâm
+  if (spin !== undefined) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(spin);
+    ctx.strokeStyle = metal ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = metal ? 1.5 : Math.max(2, r * 0.09);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.38, r * 1.05, 0, -Math.PI / 2, Math.PI / 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // ánh phản xạ từ sàn ở mép dưới
+  const rim = ctx.createLinearGradient(x, y + r, x, y + r * 0.45);
+  rim.addColorStop(0, metal ? 'rgba(235,225,205,0.45)' : 'rgba(255,235,220,0.28)');
+  rim.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = rim;
+  ctx.fillRect(x - r, y + r * 0.45, r * 2, r * 0.6);
+
+  // vệt sáng chính (mềm) + điểm sáng gắt nhỏ
+  const hx = x - r * 0.4;
+  const hy = y - r * 0.42;
+  const hl = ctx.createRadialGradient(hx, hy, 0, hx, hy, r * (metal ? 0.42 : 0.5));
+  hl.addColorStop(0, `rgba(255,255,255,${metal ? 0.9 : 0.6})`);
+  hl.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = hl;
+  ctx.beginPath();
+  ctx.ellipse(hx, hy, r * 0.5, r * 0.36, -Math.PI / 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = `rgba(255,255,255,${metal ? 0.95 : 0.75})`;
+  ctx.beginPath();
+  ctx.ellipse(hx - r * 0.04, hy - r * 0.02, r * 0.11, r * 0.07, -Math.PI / 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // viền mảnh tối giúp tách khỏi nền giấy
+  ctx.save();
+  ctx.strokeStyle = 'rgba(30,24,60,0.25)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(x, y, r - 0.5, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}

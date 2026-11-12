@@ -2,6 +2,7 @@ import type p5 from 'p5';
 import { COL } from '@/lib/draw/colors';
 import { caption } from '@/lib/draw/geometry';
 import { dashedLine, drawPaper, labelBox } from '@/lib/draw/scene';
+import { contactShadow, shadedSphere } from '@/lib/draw/fx';
 import { fmt, fmtG } from '@/lib/format';
 
 const GROUND = 440;
@@ -76,11 +77,10 @@ export function drawFall(p: p5, s: FallScene) {
     p.triangle(BALL_X - 6, yb + 16 + L - 2, BALL_X + 6, yb + 16 + L - 2, BALL_X, yb + 16 + L + 8);
     labelBox(p, BALL_X + 52, yb + 16 + L / 2, `v = ${fmt(s.v, 1)} m/s`, COL.aText, 12);
   }
+  // quả cầu có khối như bài Động năng; bóng trên mặt đất đậm và gọn dần khi vật rơi xuống gần
+  contactShadow(p, BALL_X, GROUND, 28, GROUND - (yb + 14));
+  shadedSphere(p, BALL_X, yb, 14, COL.a);
   p.noStroke();
-  p.fill(COL.a);
-  p.circle(BALL_X, yb, 28);
-  p.fill(255, 255, 255, 120);
-  p.circle(BALL_X - 5, yb - 5, 8);
   labelBox(p, BALL_X - 50, yb, `${fmt(s.m)} kg`, COL.text, 12);
 
   // cột năng lượng

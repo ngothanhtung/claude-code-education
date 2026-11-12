@@ -2,6 +2,7 @@ import type p5 from 'p5';
 import { COL } from '@/lib/draw/colors';
 import { caption, clamp01, ease } from '@/lib/draw/geometry';
 import { dashedLine, drawPaper, labelBox } from '@/lib/draw/scene';
+import { contactShadow, shadedSphere } from '@/lib/draw/fx';
 import { fmt, fmtG } from '@/lib/format';
 
 export interface PotentialScene {
@@ -84,7 +85,8 @@ export function drawPotential(p: p5, s: PotentialScene) {
   dashedLine(p, RULER_X + 6, yOf(s.h), LIFT_X - 30, yOf(s.h), COL.muted, 1.2, [4, 4]);
   labelBox(p, RULER_X - 44, (FLOOR + yOf(s.h)) / 2, `h = ${s.hText}`, COL.ink, 13);
 
-  // vật
+  // vật: bóng trên sàn nhạt và loang dần khi vật được nâng lên
+  contactShadow(p, LIFT_X, FLOOR, half * 2, FLOOR - yObj);
   p.noStroke();
   if (s.shape === 'box') {
     p.fill('#B98B52');
@@ -93,10 +95,8 @@ export function drawPotential(p: p5, s: PotentialScene) {
     p.strokeWeight(1.5);
     p.line(LIFT_X - half, yObj - half, LIFT_X + half, yObj - half);
   } else {
-    p.fill('#6E9B3A');
-    p.circle(LIFT_X, yObj - half, half * 2);
-    p.fill(255, 255, 255, 90);
-    p.circle(LIFT_X - 6, yObj - half - 6, 9);
+    shadedSphere(p, LIFT_X, yObj - half, half, '#6E9B3A');
+    p.noStroke();
   }
   labelBox(p, LIFT_X + 62, yObj - half, `m = ${s.mText}`, COL.text, 12);
 

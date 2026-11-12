@@ -3,6 +3,7 @@ import { COL } from '@/lib/draw/colors';
 import { caption, clamp01, ease, lerp } from '@/lib/draw/geometry';
 import { dashedLine, drawPaper, labelBox } from '@/lib/draw/scene';
 import { drawCar, drawMoto } from '@/lib/draw/vehicles';
+import { contactShadow, shadedSphere } from '@/lib/draw/fx';
 
 export type Shape = 'ball' | 'iron' | 'moto' | 'car';
 
@@ -50,6 +51,7 @@ export function drawKinetic(p: p5, s: KineticScene) {
 
   // khúc gỗ
   const bx = BLOCK_X + (s.t > 1 ? slide : 0);
+  contactShadow(p, bx + BLOCK_W / 2, FLOOR, BLOCK_W * 1.05);
   p.noStroke();
   p.fill('#C99A62');
   p.rect(bx, FLOOR - BLOCK_H, BLOCK_W, BLOCK_H, 3);
@@ -118,19 +120,9 @@ function drawObject(p: p5, shape: Shape, x: number, travelled: number) {
   }
   const r = HALF[shape];
   const cy = FLOOR - r;
-  p.noStroke();
-  p.fill(0, 0, 0, 40);
-  p.ellipse(x, FLOOR - 1, r * 1.8, 6);
-  p.fill(shape === 'ball' ? COL.a : '#59627A');
-  p.circle(x, cy, r * 2);
-  // vạch xoay để thấy vật lăn
-  const ang = travelled / r;
-  p.stroke(255, 255, 255, 170);
-  p.strokeWeight(3);
-  p.line(x + Math.cos(ang) * r * 0.2, cy + Math.sin(ang) * r * 0.2, x + Math.cos(ang) * r * 0.8, cy + Math.sin(ang) * r * 0.8);
-  p.noStroke();
-  p.fill(255, 255, 255, 110);
-  p.circle(x - r * 0.35, cy - r * 0.35, r * 0.5);
+  // bóng đổ mềm trên mặt bàn + quả cầu có khối; đường may xoay theo quãng đường để thấy vật lăn
+  contactShadow(p, x, FLOOR, r * 2);
+  shadedSphere(p, x, cy, r, shape === 'ball' ? COL.a : '#6B7385', { metal: shape === 'iron', spin: travelled / r });
 }
 
 function drawEnergyBar(p: p5, s: KineticScene) {
