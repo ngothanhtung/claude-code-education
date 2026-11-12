@@ -1,0 +1,128 @@
+/*
+ * Tailwind CSS v4 + theme shadcn/ui (dùng cho sidebar và các component trong src/components/ui).
+ * KHÔNG nạp preflight của Tailwind cho toàn site: các trang dùng globals.css (CSS thuần) đã có giao diện riêng,
+ * preflight sẽ xóa số thứ tự danh sách, cỡ chữ tiêu đề… Thay vào đó có một preflight thu gọn
+ * chỉ áp dụng cho phần tử của shadcn (có thuộc tính data-slot).
+ * Màu map sang bảng màu "mực tím" của globals.css (:root).
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "tw-animate-css";
+@import "./shadcn-variants.css";
+
+@source "../";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+  --radius-md: calc(var(--radius) - 2px);
+  --background: #ffffff;
+  --foreground: #1d2540;
+  --card: #ffffff;
+  --card-foreground: #1d2540;
+  --popover: #ffffff;
+  --popover-foreground: #1d2540;
+  --primary: #3b2a8c;
+  --primary-foreground: #ffffff;
+  --secondary: #ece8fa;
+  --secondary-foreground: #2c1f70;
+  /* "muted" của shadcn là màu NỀN; globals.css đã dùng --muted cho màu chữ xám nên đổi tên */
+  --surface-muted: #eef1f7;
+  --muted-foreground: #5a6482;
+  --accent: #ece8fa;
+  --accent-foreground: #2c1f70;
+  --destructive: #c2302b;
+  --border: #d5ddec;
+  --input: #d5ddec;
+  --ring: #3b2a8c;
+  --sidebar: #fbfaff;
+  --sidebar-foreground: #1d2540;
+  --sidebar-primary: #3b2a8c;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ece8fa;
+  --sidebar-accent-foreground: #2c1f70;
+  --sidebar-border: #d5ddec;
+  --sidebar-ring: #3b2a8c;
+}
+
+@theme inline {
+  --font-sans: var(--font-ui), system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+ * Preflight thu gọn, CHỈ cho các phần của shadcn: sidebar, ngăn kéo (sheet) trên điện thoại, menu, tooltip, nút ☰.
+ * Không dùng [data-slot] * vì SidebarProvider bọc cả trang: nội dung bài học phải giữ nguyên CSS của globals.css.
+ */
+@layer base {
+  /* như preflight: thuộc tính hidden luôn ẩn (tooltip của sidebar dùng hidden khi đang mở rộng hoặc trên điện thoại) */
+  [hidden]:where(:not([hidden='until-found'])) {
+    display: none !important;
+  }
+
+  :is([data-slot='sidebar'], [data-slot='sheet-content'], [data-slot='sheet-overlay'], [data-slot^='dropdown-menu-'],
+    [data-slot='tooltip-content'], [data-slot='sidebar-trigger'], [data-slot='site-header']),
+  :is([data-slot='sidebar'], [data-slot='sheet-content'], [data-slot^='dropdown-menu-'], [data-slot='tooltip-content'],
+    [data-slot='site-header']) :is(*, ::before, ::after) {
+    box-sizing: border-box;
+    border: 0 solid var(--border);
+    margin: 0;
+    padding: 0;
+  }
+
+  :is([data-slot='sidebar'], [data-slot='sheet-content'], [data-slot^='dropdown-menu-'], [data-slot='site-header'])
+    :where(button, input),
+  :where(button)[data-slot='sidebar-trigger'] {
+    font: inherit;
+    color: inherit;
+    background-color: transparent;
+    letter-spacing: inherit;
+    cursor: pointer;
+  }
+
+  :is([data-slot='sidebar'], [data-slot='sheet-content'], [data-slot^='dropdown-menu-']) :where(ul, ol) {
+    list-style: none;
+  }
+
+  :is([data-slot='sidebar'], [data-slot='sheet-content'], [data-slot^='dropdown-menu-'], [data-slot='site-header']) :where(a) {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  :is([data-slot='sidebar'], [data-slot='sheet-content'], [data-slot^='dropdown-menu-'], [data-slot='site-header'],
+    [data-slot='sidebar-trigger']) :where(svg) {
+    display: block;
+    vertical-align: middle;
+  }
+}

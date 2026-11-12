@@ -7,7 +7,9 @@ import {
 } from '@/lib/elements';
 import { fmt } from '@/lib/format';
 import { solidOf, view3dOfFormula, type SolidView } from '@/lib/molecules3d';
+import { Grid3x3Icon } from 'lucide-react';
 import BohrModel from './BohrModel';
+import ToolToggle from './ToolToggle';
 import Molecule3D from './Molecule3D';
 
 /**
@@ -140,17 +142,13 @@ export default function PeriodicTable() {
 
   return (
     <>
-      <button type="button" className="calc-toggle ptable-toggle" aria-expanded={open} aria-controls="bang-tuan-hoan" onClick={() => setOpen((o) => !o)}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
-          <rect x="2.5" y="4" width="5" height="5" rx="1" />
-          <rect x="16.5" y="4" width="5" height="5" rx="1" />
-          <rect x="2.5" y="10" width="5" height="5" rx="1" />
-          <rect x="9.5" y="10" width="5" height="5" rx="1" />
-          <rect x="16.5" y="10" width="5" height="5" rx="1" />
-          <path d="M5 18.5h14" />
-        </svg>
-        Bảng tuần hoàn
-      </button>
+      <ToolToggle
+        label="Bảng tuần hoàn"
+        icon={<Grid3x3Icon aria-hidden="true" />}
+        open={open}
+        controls="bang-tuan-hoan"
+        onToggle={() => setOpen((o) => !o)}
+      />
 
       {open && (
         <div

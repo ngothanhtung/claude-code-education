@@ -1,5 +1,7 @@
 'use client';
 
+import { CalculatorIcon } from 'lucide-react';
+import ToolToggle from './ToolToggle';
 import {
   useCallback, useEffect, useLayoutEffect, useRef, useState,
   type KeyboardEvent, type PointerEvent, type ReactNode,
@@ -301,20 +303,13 @@ export default function Calculator() {
 
   return (
     <>
-      <button
-        type="button"
-        className="calc-toggle"
-        aria-expanded={open}
-        aria-controls="may-tinh"
-        onClick={() => setOpen((o) => !o)}
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-          <rect x="5" y="2.5" width="14" height="19" rx="2.5" />
-          <rect x="8" y="5.5" width="8" height="4" rx="1" />
-          <path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01" strokeWidth="2.6" />
-        </svg>
-        Máy tính
-      </button>
+      <ToolToggle
+        label="Máy tính"
+        icon={<CalculatorIcon aria-hidden="true" />}
+        open={open}
+        controls="may-tinh"
+        onToggle={() => setOpen((o) => !o)}
+      />
 
       {open && (
         <div

@@ -24,10 +24,13 @@
   --radius-sm: 10px;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* reset nằm trong layer base để các class Tailwind (layer utilities) của shadcn/ui vẫn có hiệu lực */
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 body {
@@ -36,14 +39,15 @@ body {
   line-height: 1.55;
   color: var(--text);
   background: var(--page);
-  padding: 28px clamp(14px, 3vw, 40px) 40px;
   -webkit-font-smoothing: antialiased;
 }
 
-:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 3px;
-  border-radius: 6px;
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
 }
 
 /* ============================================================
@@ -1659,32 +1663,38 @@ kbd {
 /* ============================================================
    MÁY TÍNH KHOA HỌC (cửa sổ nổi, các bài Vật lý 9)
    ============================================================ */
-.calc-toggle {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: 40;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font: 700 16px/1 var(--font-ui), system-ui, sans-serif;
+/* nút tròn chỉ có icon (ToolToggle), tên hiện trong tooltip */
+.tool-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
   color: #fff;
   background: var(--ink);
   border: 0;
-  border-radius: 999px;
-  padding: 12px 20px 12px 16px;
+  border-radius: 50%;
+  padding: 0;
   cursor: pointer;
   box-shadow: 0 12px 28px -12px rgba(44, 31, 112, 0.7);
+  transition: background 0.15s, transform 0.15s;
 }
 
-.calc-toggle svg {
-  width: 22px;
-  height: 22px;
+.tool-toggle svg {
+  width: 24px;
+  height: 24px;
 }
 
-.calc-toggle:hover,
-.calc-toggle[aria-expanded='true'] {
+.tool-toggle:hover,
+.tool-toggle[aria-expanded='true'] {
   background: var(--ink-dark);
+}
+
+.tool-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.tool-toggle[aria-expanded='true'] {
+  box-shadow: 0 0 0 3px var(--paper, #fff), 0 0 0 5px var(--ink);
 }
 
 .calculator {
@@ -2004,15 +2014,10 @@ kbd {
     cursor: default;
   }
 
-  .calc-toggle {
-    right: 14px;
-    bottom: 14px;
-  }
 }
 
 @media print {
-  .calculator,
-  .calc-toggle {
+  .calculator {
     display: none;
   }
 }
@@ -2069,9 +2074,6 @@ kbd {
   pointer-events: auto;
 }
 
-.tool-dock .calc-toggle {
-  position: static;
-}
 
 /* cửa sổ đang được chọn nằm trên cùng */
 .calculator:focus-within,
@@ -2398,9 +2400,9 @@ kbd {
     left: 14px;
   }
 
-  .tool-dock .calc-toggle {
-    padding: 10px 14px 10px 12px;
-    font-size: 14px;
+  .tool-toggle {
+    width: 46px;
+    height: 46px;
   }
 
   .ptable {
@@ -2977,4 +2979,37 @@ kbd {
 
 .ptable-body > .ptable-info {
   align-items: stretch;
+}
+
+/* ============================================================
+   MỤC LỤC TOÀN HỆ THỐNG: shadcn/ui sidebar-07 (src/components/app-sidebar.tsx, theme ở shadcn.css)
+   ============================================================ */
+/* vùng nội dung bên phải sidebar (lề trang trước đây đặt ở body) */
+.page-body {
+  padding: 28px clamp(14px, 3vw, 40px) 40px;
+}
+
+/* thanh trên cùng: nút thu/mở mục lục + tên trang; dính khi cuộn */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 12px;
+  background: rgb(255 255 255 / 0.85);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line, #d5ddec);
+}
+.site-header .site-header-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--muted);
+}
+.site-header kbd {
+  margin-left: auto;
+  font: 12px var(--font-ui), sans-serif;
+  color: var(--muted);
 }

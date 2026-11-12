@@ -55,11 +55,15 @@ export function drawSeries(p: p5, s: SeriesScene) {
   }
   glassBeaker(p, b);
   labelBox(p, b.x, b.yBottom + 22, s.solLabel, COL.muted, 13);
-  labelBox(p, b.x, top - 16, `thanh ${s.metal}`, COL.text, 13);
+  // nhãn bên phải phần thanh chưa ngập (không đặt trên đầu thanh để khỏi chạm dòng chú thích y = 132)
+  labelBox(p, b.x + 62, top + 20, `thanh ${s.metal}`, COL.text, 13);
 
   // phương trình hoặc kết luận
-  labelBox(p, 600, 300, s.reacts ? 'Có phản ứng' : 'Không phản ứng', s.reacts ? COL.aText : COL.muted, 18);
-  if (s.reacts) labelBox(p, 600, 340, s.equation, COL.ink, 16);
+  // kết luận chỉ hiện khi thanh đã nhúng vào dung dịch (đề hỏi "phản ứng có xảy ra không?")
+  if (s.t >= 1) {
+    labelBox(p, 600, 300, s.reacts ? 'Có phản ứng' : 'Không phản ứng', s.reacts ? COL.aText : COL.muted, 18);
+    if (s.reacts) labelBox(p, 600, 340, s.equation, COL.ink, 16);
+  }
 
   if (!s.started) caption(p, 'So sánh vị trí hai nguyên tố trong dãy hoạt động hóa học', 132);
   else if (!s.reacts) caption(p, `${s.metal} đứng sau ${s.cation}: không có hiện tượng gì`, 132);
